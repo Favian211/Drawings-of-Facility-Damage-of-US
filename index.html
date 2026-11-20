@@ -93,6 +93,10 @@
 
     <!-- Right Actions -->
     <div class="flex items-center gap-1.5 shrink-0">
+      <button id="btnQuickSave" class="px-2 py-1.5 rounded-lg bg-emerald-700/80 hover:bg-emerald-600 text-xs font-semibold text-white flex items-center gap-1 border border-emerald-500/40" title="현재 작업 상태를 기기에 즉시 중간 저장 (자동저장 병행)">
+        <i data-lucide="save" class="w-3.5 h-3.5"></i>
+        <span id="lblSaveStatus" class="hidden sm:inline">중간저장</span>
+      </button>
       <button id="btnOpenSettings" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 flex items-center gap-1" title="손상명·레이어 설정 (JSON/TXT)">
         <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
         <span class="hidden md:inline">레이어 설정</span>
@@ -112,38 +116,55 @@
   <div class="bg-slate-900/95 border-b border-slate-800 px-2 sm:px-3 py-1.5 flex items-center gap-2 overflow-x-auto scrollbar-thin shrink-0 z-20">
     <!-- Interaction Mode -->
     <div class="flex items-center bg-slate-800 p-0.5 rounded-lg shrink-0">
-      <button data-mode="select" class="mode-btn tool-active px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300">
-        <i data-lucide="mouse-pointer-2" class="w-3.5 h-3.5"></i><span>선택/이동</span>
+      <button data-mode="select" class="mode-btn tool-active px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300" title="화면 이동 및 배치된 손상 선택">
+        <i data-lucide="mouse-pointer-2" class="w-3.5 h-3.5"></i><span>이동</span>
       </button>
-      <button data-mode="text" class="mode-btn px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300">
-        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i><span>손상 배치</span>
+      <button data-mode="text" class="mode-btn px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300" title="클릭으로 손상 배치 / 드래그로 도형 그리기">
+        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i><span>배치</span>
       </button>
-      <button data-mode="draw" class="mode-btn px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300">
-        <i data-lucide="pen-tool" class="w-3.5 h-3.5"></i><span>형상 그리기</span>
+      <button data-mode="draw" class="mode-btn px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300" title="손상 형상 그리기">
+        <i data-lucide="pen-tool" class="w-3.5 h-3.5"></i><span>그리기</span>
+      </button>
+      <button data-mode="repairPick" class="mode-btn px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300" title="보수 모드: 기존 도면 선·글씨를 클릭/드래그해 색·레이어 변경 및 사진번호 입력">
+        <i data-lucide="highlighter" class="w-3.5 h-3.5"></i><span>보수선택</span>
       </button>
     </div>
 
     <div class="h-5 w-px bg-slate-700 shrink-0"></div>
 
-    <!-- Dynamic Damage Buttons -->
-    <div id="damageButtonsContainer" class="flex items-center gap-1.5 shrink-0"></div>
+    <!-- Active Layer Selector (Inspection Year / Status Layer) -->
+    <div class="flex items-center gap-1 bg-slate-800 px-2 py-1 rounded-lg border border-slate-700 shrink-0" title="현재 작업 레이어 선택">
+      <i data-lucide="layers" class="w-3.5 h-3.5 text-sky-400 shrink-0"></i>
+      <select id="selActiveLayer" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs font-semibold text-white outline-none max-w-[145px]"></select>
+    </div>
+
+    <!-- Compact Color Dropdown Button -->
+    <button id="btnOpenColorPicker" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white flex items-center gap-1.5 border border-slate-600 shrink-0" title="AutoCAD 표준 색상(24종) 및 사용자 색상 선택">
+      <span id="activeColorSwatch" class="w-3 h-3 rounded-full bg-red-500 border border-white/60 shrink-0"></span>
+      <span id="activeColorName" class="max-w-[64px] truncate">빨강</span>
+      <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+    </button>
 
     <div class="h-5 w-px bg-slate-700 shrink-0"></div>
 
-    <!-- Shape Selector -->
-    <div class="flex items-center gap-1 bg-slate-800 p-0.5 rounded-lg shrink-0">
-      <button data-shape="crack" class="shape-btn px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300" title="균열선 (번개/지그재그)">
-        <i data-lucide="zap" class="w-3.5 h-3.5"></i><span class="hidden sm:inline">균열선</span>
+    <!-- Compact Damage Dropdown Button -->
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button id="btnOpenDamagePicker" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white flex items-center gap-1.5 border border-slate-600" title="손상명 선택 (교량·터널·Box 표준 38종)">
+        <span id="activeDamageDot" class="w-2 h-2 rounded-full bg-red-500 border border-white/60"></span>
+        <span id="activeDamageLabel" class="max-w-[90px] truncate">균열</span>
+        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
       </button>
-      <button data-shape="cloud" class="shape-btn px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300" title="리비전 클라우드">
-        <i data-lucide="cloud" class="w-3.5 h-3.5"></i><span class="hidden sm:inline">클라우드</span>
-      </button>
-      <button data-shape="rect" class="shape-btn px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300" title="사각형">
-        <i data-lucide="square" class="w-3.5 h-3.5"></i><span class="hidden sm:inline">사각형</span>
-      </button>
-      <button data-shape="circle" class="shape-btn px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-slate-300" title="원형/타원">
-        <i data-lucide="circle" class="w-3.5 h-3.5"></i><span class="hidden sm:inline">원/타원</span>
-      </button>
+      <div id="damageButtonsContainer" class="hidden"></div>
+    </div>
+
+    <!-- Compact Shape Dropdown -->
+    <div class="flex items-center bg-slate-800 px-1.5 py-1 rounded-lg border border-slate-700 shrink-0" title="손상 형태 선택">
+      <select id="selActiveShape" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs font-medium text-slate-100 outline-none">
+        <option value="crack">⚡ 균열선</option>
+        <option value="cloud">☁ 클라우드</option>
+        <option value="rect">□ 사각형</option>
+        <option value="circle">○ 원/타원</option>
+      </select>
     </div>
 
     <!-- Auto-Beautification Toggle & Strength -->
@@ -165,7 +186,7 @@
       <button id="btnTextSmaller" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-700 text-[11px] font-bold text-slate-200" title="글씨 작게">A-</button>
       <input id="rngRibbonTextScale" type="range" min="-2.0" max="1.0" step="0.02" value="0" class="w-16 accent-blue-500" />
       <button id="btnTextLarger" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-700 text-[11px] font-bold text-slate-200" title="글씨 크게">A+</button>
-      <span id="lblRibbonTextScale" class="text-[11px] font-mono text-blue-400 w-11 text-right">1.00x</span>
+      <span id="lblRibbonTextScale" class="text-[11px] font-mono text-blue-400 w-12 text-right">10px</span>
     </div>
   </div>
 
@@ -179,14 +200,23 @@
         <button id="btnCloseLeft" class="lg:hidden p-1 text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
 
-      <!-- Upload Dropzone -->
-      <div class="p-3 border-b border-slate-800">
+      <!-- Upload Dropzone & Backup Controls -->
+      <div class="p-3 border-b border-slate-800 space-y-2">
         <label id="dropZone" class="flex flex-col items-center justify-center gap-1.5 p-3 border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl bg-slate-950/60 cursor-pointer transition-colors">
           <i data-lucide="upload-cloud" class="w-5 h-5 text-blue-400"></i>
           <span class="text-xs font-semibold text-slate-200">DXF 또는 PDF 도면 업로드</span>
           <span class="text-[10px] text-slate-400">클릭하거나 파일을 끌어다 놓으세요</span>
-          <input id="fileInput" type="file" accept=".dxf,.pdf" class="hidden" />
+          <input id="fileInput" type="file" class="hidden" />
         </label>
+        <div class="grid grid-cols-2 gap-1.5">
+          <button id="btnExportBackup" type="button" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-medium text-slate-200 flex items-center justify-center gap-1 border border-slate-700" title="현재 도면의 모든 마킹·보수·수정 이력을 JSON 파일로 백업">
+            <i data-lucide="hard-drive-download" class="w-3.5 h-3.5 text-emerald-400"></i><span>작업 백업</span>
+          </button>
+          <label class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-medium text-slate-200 flex items-center justify-center gap-1 border border-slate-700 cursor-pointer" title="백업한 JSON 작업 파일 불러오기">
+            <i data-lucide="hard-drive-upload" class="w-3.5 h-3.5 text-sky-400"></i><span>백업 복원</span>
+            <input id="backupFileInput" type="file" class="hidden" />
+          </label>
+        </div>
       </div>
 
       <!-- Saved Drawings List -->
@@ -210,12 +240,18 @@
 
       <!-- Layer Visibility Panel -->
       <div class="border-t border-slate-800 p-3 max-h-52 flex flex-col">
-        <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center justify-between mb-2 gap-1">
           <span class="text-xs font-bold uppercase tracking-wider text-slate-400">레이어 표시</span>
-          <label class="flex items-center gap-1 text-[11px] text-slate-300 cursor-pointer">
-            <input id="chkShowBaseDrawing" type="checkbox" checked class="accent-blue-500" />
-            <span>원본 도면</span>
-          </label>
+          <div class="flex items-center gap-2">
+            <label class="flex items-center gap-1 text-[11px] text-sky-300 cursor-pointer" title="화면에서 사진번호만 숨기기/보이기">
+              <input id="chkShowPhotoNo" type="checkbox" checked class="accent-sky-400" />
+              <span>사진번호</span>
+            </label>
+            <label class="flex items-center gap-1 text-[11px] text-slate-300 cursor-pointer">
+              <input id="chkShowBaseDrawing" type="checkbox" checked class="accent-blue-500" />
+              <span>원본</span>
+            </label>
+          </div>
         </div>
         <div id="layerToggleList" class="overflow-y-auto scrollbar-thin space-y-1 text-xs"></div>
       </div>
@@ -231,8 +267,10 @@
       </div>
 
       <!-- Selected Annotation Action Bar -->
-      <div id="selectedActionBar" class="hidden absolute bottom-12 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-slate-700 rounded-xl px-2.5 py-1.5 shadow-xl flex items-center gap-2 z-20">
-        <span id="selectedSummary" class="text-xs font-semibold text-white max-w-[150px] truncate"></span>
+      <div id="selectedActionBar" class="hidden absolute bottom-12 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-slate-700 rounded-xl px-2.5 py-1.5 shadow-xl flex flex-wrap items-center justify-center gap-1.5 z-20 max-w-[95vw]">
+        <span id="selectedSummary" class="text-xs font-semibold text-white max-w-[130px] truncate"></span>
+        <select id="selSelectedLayer" class="bg-slate-800 border border-slate-600 rounded-lg px-1.5 py-1 text-[11px] text-slate-100 outline-none max-w-[125px]" title="선택 항목 레이어 변경"></select>
+        <input id="inpSelectedColor" type="color" value="#FF0000" class="w-6 h-6 rounded cursor-pointer bg-transparent border border-slate-600" title="선택 항목 색상 변경" />
         <div class="h-4 w-px bg-slate-700"></div>
         <button id="btnSelTextSmaller" class="px-1.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200" title="선택 글씨 작게">A-</button>
         <button id="btnSelTextLarger" class="px-1.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200" title="선택 글씨 크게">A+</button>
@@ -242,6 +280,16 @@
         <button id="btnDeleteSelected" class="px-2 py-1 rounded-lg bg-rose-600/90 hover:bg-rose-500 text-xs font-medium text-white flex items-center gap-1">
           <i data-lucide="trash-2" class="w-3.5 h-3.5"></i><span>삭제</span>
         </button>
+      </div>
+
+      <!-- Repair Multi-Select Floating Action Bar -->
+      <div id="repairSelectionBar" class="hidden absolute bottom-12 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-sky-500/70 rounded-xl px-3 py-1.5 shadow-2xl flex items-center gap-2 z-20">
+        <span id="repairSelCount" class="text-xs font-bold text-sky-300 whitespace-nowrap">선택 0개</span>
+        <div class="h-4 w-px bg-slate-700"></div>
+        <button id="btnApplyRepairSelection" type="button" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white flex items-center gap-1 shadow">
+          <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>손상입력 (색상·사진번호)</span>
+        </button>
+        <button id="btnClearRepairSelection" type="button" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300">선택 해제</button>
       </div>
 
       <!-- Bottom Coordinate & Scale HUD -->
@@ -276,8 +324,8 @@
       <!-- Text Size Slider -->
       <div class="p-3 border-t border-slate-800 bg-slate-950/50 space-y-1.5">
         <div class="flex items-center justify-between text-xs">
-          <span class="text-slate-400">도면 글씨 크기 (CAD 실측 높이)</span>
-          <span id="lblTextScale" class="font-mono text-blue-400">1.00x</span>
+          <span class="text-slate-400">도면 글씨 크기 (표준 px)</span>
+          <span id="lblTextScale" class="font-mono text-blue-400">10px</span>
         </div>
         <input id="rngTextScale" type="range" min="-2.0" max="1.0" step="0.02" value="0" class="w-full accent-blue-500" />
       </div>
@@ -388,7 +436,7 @@
           <label class="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white cursor-pointer flex items-center gap-1">
             <i data-lucide="file-up" class="w-3.5 h-3.5"></i>
             <span>JSON / TXT 가져오기</span>
-            <input id="configFileInput" type="file" accept=".json,.txt" class="hidden" />
+            <input id="configFileInput" type="file" class="hidden" />
           </label>
           <button id="btnExportJson" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 flex items-center gap-1">
             <i data-lucide="file-json" class="w-3.5 h-3.5"></i><span>JSON 내보내기</span>
@@ -442,6 +490,87 @@
     </div>
   </div>
 
+  <!-- Categorized Damage Picker Modal (Bridge / Tunnel / Box Standard) -->
+  <div id="damagePickerModal" class="hidden fixed inset-0 bg-black/65 backdrop-blur-[2px] z-50 flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="w-full max-w-2xl max-h-[85vh] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+      <div class="px-4 py-3 bg-slate-800/80 border-b border-slate-700 flex items-center justify-between gap-2">
+        <div>
+          <h2 class="text-sm font-bold text-white">표준 손상명 선택 (교량 · 터널 · Box 안전진단)</h2>
+          <p class="text-[11px] text-slate-400">분류별로 선택하거나 검색하세요. 레이어 설정에서 항목을 추가·수정할 수 있습니다.</p>
+        </div>
+        <button id="btnCloseDamagePicker" class="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-3 bg-slate-950/60 border-b border-slate-800 space-y-2">
+        <input id="inpDamageSearch" type="text" placeholder="손상명 검색 (예: 누수, 철근, 보수, 신축이음...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500" />
+        <div id="damageCategoryTabs" class="flex items-center gap-1.5 overflow-x-auto scrollbar-thin pb-0.5"></div>
+      </div>
+      <div id="damagePickerGrid" class="flex-1 overflow-y-auto scrollbar-thin p-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
+    </div>
+  </div>
+
+  <!-- Compact AutoCAD Color Picker Modal (24 Standard ACI Colors + Custom) -->
+  <div id="colorPickerModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-[2px] z-50 flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+      <div class="px-4 py-3 bg-slate-800/80 border-b border-slate-700 flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-white">표기 색상 모드 및 선택 (AutoCAD ACI)</h2>
+          <p class="text-[11px] text-slate-400">레이어 지정색(ByLayer) 또는 직접 지정한 색상 중 선택하세요.</p>
+        </div>
+        <button id="btnCloseColorPicker" class="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="px-3 pt-3 pb-1 grid grid-cols-2 gap-2 bg-slate-950/60 border-b border-slate-800">
+        <button id="btnColorModeCustom" type="button" class="px-3 py-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all bg-blue-600 text-white border-blue-400">
+          <i data-lucide="palette" class="w-3.5 h-3.5"></i><span>지정색 사용</span>
+        </button>
+        <button id="btnColorModeByLayer" type="button" class="px-3 py-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500">
+          <i data-lucide="layers" class="w-3.5 h-3.5"></i><span>레이어색 (ByLayer)</span>
+        </button>
+      </div>
+      <div id="colorSwatchesContainer" class="p-3 grid grid-cols-4 gap-2 max-h-[52vh] overflow-y-auto scrollbar-thin"></div>
+      <div class="px-4 py-3 bg-slate-950/70 border-t border-slate-800 flex items-center justify-between gap-2">
+        <span class="text-xs text-slate-300 font-medium">사용자 자유 색상 선택</span>
+        <div class="flex items-center gap-2">
+          <input id="inpCustomColor" type="color" value="#FF0000" class="w-8 h-7 rounded cursor-pointer bg-transparent border border-slate-600" title="사용자 지정 색상" />
+          <button id="btnApplyCustomColor" type="button" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white">적용</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Existing DXF Text Edit Modal (내용수정) -->
+  <div id="editBaseTextModal" class="hidden fixed inset-0 bg-black/65 backdrop-blur-[2px] z-50 flex items-end sm:items-center justify-center p-2 sm:p-4">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+      <div class="px-4 py-3 bg-slate-800/80 border-b border-slate-700 flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-white">기존 도면 글씨 내용수정</h2>
+          <p class="text-[11px] text-slate-400">원본 DXF 텍스트 내용을 수정하고 레이어·색상·사진번호를 적용합니다.</p>
+        </div>
+        <button id="btnCloseEditBaseText" class="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-4 space-y-3">
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1">기존 글씨 내용</label>
+          <textarea id="inpEditBaseTextContent" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono outline-none focus:border-blue-500"></textarea>
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1">적용 레이어</label>
+          <select id="selEditBaseTextLayer" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-white outline-none"></select>
+        </div>
+        <p class="text-[11px] text-sky-300/90">※ [수정 적용]을 누르면 다른 손상과 동일한 버튼식 사진번호 키패드가 바로 열립니다.</p>
+      </div>
+      <div class="px-4 py-3 bg-slate-800/60 border-t border-slate-800 flex items-center justify-end gap-2">
+        <button id="btnCancelEditBaseText" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300">취소</button>
+        <button id="btnSaveEditBaseText" type="button" class="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white shadow">수정 적용</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toastBox" class="pointer-events-none fixed bottom-16 right-4 z-50 flex flex-col gap-2"></div>
 
@@ -454,18 +583,107 @@
    * ========================================================================= */
   const DEFAULT_CONFIG = {
     layers: [
-      { name: 'DMG_CRACK', color: '#FF0000', aciColor: 1, lineType: 'CONTINUOUS' },
-      { name: 'DMG_SPALLING', color: '#0066FF', aciColor: 5, lineType: 'CONTINUOUS' },
-      { name: 'DMG_EFFLORESCENCE', color: '#00AA55', aciColor: 3, lineType: 'CONTINUOUS' },
-      { name: 'DMG_REPAIR', color: '#FF9900', aciColor: 30, lineType: 'DASHED' }
+      { name: '2026정밀 신규', color: '#FF0000', aciColor: 1, lineType: 'CONTINUOUS' },
+      { name: '2026정밀 변경', color: '#FF9900', aciColor: 30, lineType: 'CONTINUOUS' },
+      { name: '2026정밀 보수', color: '#00AA55', aciColor: 3, lineType: 'DASHED' },
+      { name: '2026정밀 삭제', color: '#94A3B8', aciColor: 8, lineType: 'DASHED' },
+      { name: '2024년 신규손상', color: '#0066FF', aciColor: 5, lineType: 'CONTINUOUS' },
+      { name: '2024년 보수완료', color: '#00C7BE', aciColor: 4, lineType: 'DASHED' },
+      { name: '2024년 삭제', color: '#64748B', aciColor: 8, lineType: 'DASHED' },
+      { name: '2024진단 이상반영', color: '#AF52DE', aciColor: 6, lineType: 'CONTINUOUS' },
+      { name: '2022년 보수확인', color: '#FFCC00', aciColor: 2, lineType: 'CONTINUOUS' },
+      { name: '2022년 삭제', color: '#475569', aciColor: 250, lineType: 'DASHED' }
     ],
     damages: [
-      { label: '균열', layer: 'DMG_CRACK', defaultShape: 'crack', defaultUnit: 'mm' },
-      { label: '박리', layer: 'DMG_SPALLING', defaultShape: 'cloud', defaultUnit: 'm' },
-      { label: '백태', layer: 'DMG_EFFLORESCENCE', defaultShape: 'cloud', defaultUnit: 'm' },
-      { label: '보수', layer: 'DMG_REPAIR', defaultShape: 'rect', defaultUnit: 'm' }
+      // 균열류
+      { label: '균열', category: '균열', layer: '2026정밀 신규', defaultShape: 'crack', defaultUnit: 'mm', quick: true },
+      { label: '망상균열', category: '균열', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm²' },
+      { label: '종방향균열', category: '균열', layer: '2026정밀 신규', defaultShape: 'crack', defaultUnit: 'mm' },
+      { label: '횡방향균열', category: '균열', layer: '2026정밀 신규', defaultShape: 'crack', defaultUnit: 'mm' },
+      { label: '경사균열', category: '균열', layer: '2026정밀 신규', defaultShape: 'crack', defaultUnit: 'mm' },
+      { label: '누수균열', category: '균열', layer: '2026정밀 신규', defaultShape: 'crack', defaultUnit: 'mm' },
+      // 콘크리트 표면·단면 손상
+      { label: '박리', category: '콘크리트', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm', quick: true },
+      { label: '박락', category: '콘크리트', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm' },
+      { label: '철근노출', category: '콘크리트', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm', quick: true },
+      { label: '재료분리', category: '콘크리트', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm' },
+      { label: '파손', category: '콘크리트', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm' },
+      { label: '단면손상', category: '콘크리트', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm' },
+      { label: '표면열화', category: '콘크리트', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm²' },
+      { label: '층분리', category: '콘크리트', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm' },
+      // 누수·백태·오염
+      { label: '누수', category: '누수·백태', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm' },
+      { label: '백태', category: '누수·백태', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm' },
+      { label: '누수백태', category: '누수·백태', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm', quick: true },
+      { label: '습윤', category: '누수·백태', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm²' },
+      { label: '배수불량', category: '누수·백태', layer: '2026정밀 신규', defaultShape: 'circle', defaultUnit: 'EA' },
+      { label: '오염', category: '누수·백태', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm²' },
+      // 강재·부속시설 (교량)
+      { label: '도장열화', category: '강재·부속', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm²' },
+      { label: '부식', category: '강재·부속', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm' },
+      { label: '볼트풀림', category: '강재·부속', layer: '2026정밀 신규', defaultShape: 'circle', defaultUnit: 'EA' },
+      { label: '신축이음파손', category: '강재·부속', layer: '2026정밀 신규', defaultShape: 'rect', defaultUnit: 'm' },
+      { label: '신축이음누수', category: '강재·부속', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm' },
+      { label: '받침부식', category: '강재·부속', layer: '2026정밀 신규', defaultShape: 'circle', defaultUnit: 'EA' },
+      { label: '받침이상', category: '강재·부속', layer: '2026정밀 신규', defaultShape: 'circle', defaultUnit: 'EA' },
+      { label: '배수구막힘', category: '강재·부속', layer: '2026정밀 신규', defaultShape: 'circle', defaultUnit: 'EA' },
+      // 터널·Box·이음부
+      { label: '시공이음부누수', category: '터널·Box', layer: '2026정밀 신규', defaultShape: 'crack', defaultUnit: 'm' },
+      { label: '신축이음부파손', category: '터널·Box', layer: '2026정밀 신규', defaultShape: 'rect', defaultUnit: 'm' },
+      { label: '유간협소', category: '터널·Box', layer: '2026정밀 신규', defaultShape: 'rect', defaultUnit: 'mm' },
+      { label: '줄눈탈락', category: '터널·Box', layer: '2026정밀 신규', defaultShape: 'crack', defaultUnit: 'm' },
+      { label: '단차', category: '터널·Box', layer: '2026정밀 신규', defaultShape: 'rect', defaultUnit: 'mm' },
+      // 보수 이력
+      { label: '보수', category: '보수이력', layer: '2026정밀 보수', defaultShape: 'rect', defaultUnit: 'm', quick: true },
+      { label: '보수완료', category: '보수이력', layer: '2026정밀 보수', defaultShape: 'rect', defaultUnit: 'm' },
+      { label: '보수재탈락', category: '보수이력', layer: '2026정밀 신규', defaultShape: 'cloud', defaultUnit: 'm' },
+      { label: '보수부균열', category: '보수이력', layer: '2026정밀 변경', defaultShape: 'crack', defaultUnit: 'mm' },
+      { label: '주입흔적', category: '보수이력', layer: '2026정밀 보수', defaultShape: 'crack', defaultUnit: 'm' },
+      { label: '내용수정', category: '보수이력', layer: '2026정밀 변경', defaultShape: 'rect', defaultUnit: '' }
     ]
   };
+
+  const QUICK_COLORS = [
+    { hex: '#FF0000', aci: 1, name: '빨강' },
+    { hex: '#FFCC00', aci: 2, name: '노랑' },
+    { hex: '#00CC55', aci: 3, name: '초록' },
+    { hex: '#00D4FF', aci: 4, name: '하늘' },
+    { hex: '#2563EB', aci: 5, name: '파랑' },
+    { hex: '#D946EF', aci: 6, name: '마젠타' },
+    { hex: '#FFFFFF', aci: 7, name: '흰색' },
+    { hex: '#FF8800', aci: 30, name: '주황' },
+    { hex: '#FFB74D', aci: 40, name: '연주황' },
+    { hex: '#B91C1C', aci: 14, name: '진빨강' },
+    { hex: '#FF66B2', aci: 211, name: '분홍' },
+    { hex: '#A3E635', aci: 80, name: '연두' },
+    { hex: '#15803D', aci: 94, name: '진초록' },
+    { hex: '#14B8A6', aci: 130, name: '청록' },
+    { hex: '#38BDF8', aci: 140, name: '연하늘' },
+    { hex: '#3B82F6', aci: 160, name: '코발트' },
+    { hex: '#1E3A8A', aci: 174, name: '남색' },
+    { hex: '#9333EA', aci: 200, name: '보라' },
+    { hex: '#C084FC', aci: 210, name: '연보라' },
+    { hex: '#BE185D', aci: 230, name: '자주' },
+    { hex: '#92400E', aci: 34, name: '갈색' },
+    { hex: '#D97706', aci: 44, name: '황토' },
+    { hex: '#64748B', aci: 8, name: '회색' },
+    { hex: '#CBD5E1', aci: 9, name: '연회색' }
+  ];
+
+  function hexToNearestAci(hex) {
+    if (!hex) return 1;
+    const h = hex.replace('#', '');
+    if (h.length !== 6) return 1;
+    const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+    let bestAci = 1, bestDist = Infinity;
+    QUICK_COLORS.forEach(c => {
+      const ch = c.hex.replace('#', '');
+      const cr = parseInt(ch.slice(0, 2), 16), cg = parseInt(ch.slice(2, 4), 16), cb = parseInt(ch.slice(4, 6), 16);
+      const d = (r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2;
+      if (d < bestDist) { bestDist = d; bestAci = c.aci; }
+    });
+    return bestAci;
+  }
 
   const ACI_COLORS = {
     1: '#FF3B30', 2: '#FFCC00', 3: '#34C759', 4: '#00C7BE', 5: '#007AFF',
@@ -635,12 +853,12 @@
    * 3. PURE JS DXF PARSER (Preserves World Coordinates & Layers)
    * ========================================================================= */
   function parseDxf(text) {
-    const rawLines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+    const rawLines = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
     const pairs = [];
     for (let i = 0; i + 1 < rawLines.length; i += 2) {
       const code = parseInt(rawLines[i].trim(), 10);
       if (Number.isNaN(code)) continue;
-      pairs.push({ code, value: rawLines[i + 1].trim() });
+      pairs.push({ code, value: rawLines[i + 1].trim(), lineIdx: i });
     }
 
     const layers = {};
@@ -677,9 +895,10 @@
 
       if (section === 'ENTITIES' && p.code === 0) {
         const type = p.value;
+        const startLine = p.lineIdx;
         i++;
         if (type === 'LINE') {
-          const e = { type: 'LINE', layer: '0', x1: 0, y1: 0, x2: 0, y2: 0, color: null };
+          const e = { type: 'LINE', layer: '0', x1: 0, y1: 0, x2: 0, y2: 0, color: null, startLine };
           while (i < pairs.length && pairs[i].code !== 0) {
             const { code, value } = pairs[i];
             if (code === 8) e.layer = value;
@@ -690,11 +909,12 @@
             else if (code === 21) e.y2 = parseFloat(value);
             i++;
           }
+          e.endLine = i < pairs.length ? pairs[i].lineIdx : rawLines.length;
           entities.push(e);
           continue;
         }
         if (type === 'LWPOLYLINE') {
-          const e = { type: 'LWPOLYLINE', layer: '0', points: [], closed: false, color: null };
+          const e = { type: 'LWPOLYLINE', layer: '0', points: [], closed: false, color: null, startLine };
           let curPt = null;
           while (i < pairs.length && pairs[i].code !== 0) {
             const { code, value } = pairs[i];
@@ -711,11 +931,12 @@
             }
             i++;
           }
+          e.endLine = i < pairs.length ? pairs[i].lineIdx : rawLines.length;
           if (e.points.length >= 2) entities.push(e);
           continue;
         }
         if (type === 'POLYLINE') {
-          const e = { type: 'LWPOLYLINE', layer: '0', points: [], closed: false, color: null };
+          const e = { type: 'LWPOLYLINE', layer: '0', points: [], closed: false, color: null, startLine };
           while (i < pairs.length && pairs[i].code !== 0) {
             const { code, value } = pairs[i];
             if (code === 8) e.layer = value;
@@ -743,11 +964,12 @@
               break;
             }
           }
+          e.endLine = i < pairs.length ? pairs[i].lineIdx : rawLines.length;
           if (e.points.length >= 2) entities.push(e);
           continue;
         }
         if (type === 'CIRCLE') {
-          const e = { type: 'CIRCLE', layer: '0', cx: 0, cy: 0, r: 1, color: null };
+          const e = { type: 'CIRCLE', layer: '0', cx: 0, cy: 0, r: 1, color: null, startLine };
           while (i < pairs.length && pairs[i].code !== 0) {
             const { code, value } = pairs[i];
             if (code === 8) e.layer = value;
@@ -757,11 +979,12 @@
             else if (code === 40) e.r = parseFloat(value);
             i++;
           }
+          e.endLine = i < pairs.length ? pairs[i].lineIdx : rawLines.length;
           entities.push(e);
           continue;
         }
         if (type === 'ARC') {
-          const e = { type: 'ARC', layer: '0', cx: 0, cy: 0, r: 1, startAngle: 0, endAngle: 360, color: null };
+          const e = { type: 'ARC', layer: '0', cx: 0, cy: 0, r: 1, startAngle: 0, endAngle: 360, color: null, startLine };
           while (i < pairs.length && pairs[i].code !== 0) {
             const { code, value } = pairs[i];
             if (code === 8) e.layer = value;
@@ -773,11 +996,12 @@
             else if (code === 51) e.endAngle = parseFloat(value);
             i++;
           }
+          e.endLine = i < pairs.length ? pairs[i].lineIdx : rawLines.length;
           entities.push(e);
           continue;
         }
         if (type === 'ELLIPSE') {
-          const e = { type: 'ELLIPSE', layer: '0', cx: 0, cy: 0, mx: 1, my: 0, ratio: 1, color: null };
+          const e = { type: 'ELLIPSE', layer: '0', cx: 0, cy: 0, mx: 1, my: 0, ratio: 1, color: null, startLine };
           while (i < pairs.length && pairs[i].code !== 0) {
             const { code, value } = pairs[i];
             if (code === 8) e.layer = value;
@@ -789,11 +1013,12 @@
             else if (code === 40) e.ratio = parseFloat(value);
             i++;
           }
+          e.endLine = i < pairs.length ? pairs[i].lineIdx : rawLines.length;
           entities.push(e);
           continue;
         }
         if (type === 'TEXT' || type === 'MTEXT') {
-          const e = { type: 'TEXT', layer: '0', x: 0, y: 0, height: 200, text: '', rotation: 0, color: null };
+          const e = { type: 'TEXT', layer: '0', x: 0, y: 0, height: 200, text: '', rotation: 0, color: null, startLine };
           while (i < pairs.length && pairs[i].code !== 0) {
             const { code, value } = pairs[i];
             if (code === 8) e.layer = value;
@@ -807,7 +1032,28 @@
           }
           // Clean MTEXT formatting codes
           e.text = e.text.replace(/\\P/g, '\n').replace(/\{\\[^;]+;|[{}]/g, '');
+          e.endLine = i < pairs.length ? pairs[i].lineIdx : rawLines.length;
           entities.push(e);
+          continue;
+        }
+        if (type === 'SPLINE') {
+          const e = { type: 'LWPOLYLINE', layer: '0', points: [], closed: false, color: null, startLine };
+          let curPt = null;
+          while (i < pairs.length && pairs[i].code !== 0) {
+            const { code, value } = pairs[i];
+            if (code === 8) e.layer = value;
+            else if (code === 62) e.color = parseInt(value, 10);
+            else if (code === 70) e.closed = (parseInt(value, 10) & 1) === 1;
+            else if (code === 10 || code === 11) {
+              curPt = { x: parseFloat(value), y: 0, bulge: 0 };
+              e.points.push(curPt);
+            } else if ((code === 20 || code === 21) && curPt) {
+              curPt.y = parseFloat(value);
+            }
+            i++;
+          }
+          e.endLine = i < pairs.length ? pairs[i].lineIdx : rawLines.length;
+          if (e.points.length >= 2) entities.push(e);
           continue;
         }
         // Skip unsupported entity
@@ -917,7 +1163,7 @@
     const h = Math.max(maxY - minY, 1e-3);
     const diag = Math.hypot(w, h);
     const strengthMul = strength === 'low' ? 0.65 : strength === 'high' ? 1.45 : 1.0;
-    const tightGap = Math.min(diag * 0.06, worldScale * 0.003);
+    const topCenterAnchor = (x1, x2, y2) => ({ x: (x1 + x2) / 2, y: y2 });
 
     if (!enabled) {
       const eps = Math.max(diag * 0.008, 1e-4);
@@ -926,7 +1172,7 @@
         kind: 'polyline',
         points: simplified.map(p => ({ x: p.x, y: p.y, bulge: 0 })),
         closed: shapeType === 'cloud' || shapeType === 'rect' || shapeType === 'circle',
-        anchor: { x: (minX + maxX) / 2, y: maxY + tightGap }
+        anchor: topCenterAnchor(minX, maxX, maxY)
       };
     }
 
@@ -952,7 +1198,7 @@
           { x: rx1, y: ry2, bulge: 0 }
         ],
         closed: true,
-        anchor: { x: (rx1 + rx2) / 2, y: ry2 + tightGap }
+        anchor: topCenterAnchor(rx1, rx2, ry2)
       };
     }
 
@@ -965,12 +1211,14 @@
       const aspect = rx / Math.max(ry, 1e-6);
       const isCircle = aspect > 0.78 && aspect < 1.28;
       const r = (rx + ry) / 2;
+      const effRx = isCircle ? r : rx;
+      const effRy = isCircle ? r : ry;
       return {
         kind: isCircle ? 'circle' : 'ellipse',
         cx, cy,
-        rx: isCircle ? r : rx,
-        ry: isCircle ? r : ry,
-        anchor: { x: cx, y: cy + (isCircle ? r : ry) + tightGap }
+        rx: effRx,
+        ry: effRy,
+        anchor: topCenterAnchor(cx - effRx, cx + effRx, cy + effRy)
       };
     }
 
@@ -997,7 +1245,7 @@
         kind: 'cloud',
         points: resampled.map(p => ({ x: p.x, y: p.y, bulge: bulgeVal })),
         closed: true,
-        anchor: { x: (minX + maxX) / 2, y: maxY + Math.min(arcChord * 0.35, tightGap * 2) }
+        anchor: topCenterAnchor(minX, maxX, maxY + arcChord * 0.25)
       };
     }
 
@@ -1022,45 +1270,58 @@
       });
     }
     zigzag.push(resampled[resampled.length - 1]);
-    const mid = zigzag[Math.floor(zigzag.length / 2)];
     return {
       kind: 'crack',
       points: zigzag.map(p => ({ x: p.x, y: p.y, bulge: 0 })),
       closed: false,
-      anchor: { x: mid.x + tightGap, y: mid.y + tightGap }
+      anchor: topCenterAnchor(minX, maxX, maxY)
     };
   }
 
   /* =========================================================================
    * 5. DXF EXPORT ENGINE (Layer-Separated, Preserves Original DXF Entities)
    * ========================================================================= */
-  function buildDamageDxfEntities(markings, config, baseTextHeight) {
+  function buildDamageDxfEntities(markings, config, baseTextHeight, nextHandleFn, useAcDb, modelSpaceOwner) {
     const out = [];
     const push = (...args) => args.forEach(a => out.push(String(a)));
 
     markings.forEach(m => {
-      const layerDef = config.layers.find(l => l.name === m.layer) || config.layers[0];
-      const layerName = layerDef ? layerDef.name : m.layer;
-      const aci = layerDef ? (layerDef.aciColor || 1) : 1;
-      const ltype = layerDef ? (layerDef.lineType || 'CONTINUOUS') : 'CONTINUOUS';
+      const layerDef = config.layers.find(l => l.name === m.layer);
+      const layerName = m.layer || (layerDef ? layerDef.name : '2026정밀 신규');
+      const aci = state.colorMode === 'byLayer'
+        ? (layerDef ? (layerDef.aciColor || 1) : 256)
+        : (m.aciColor || (m.color ? hexToNearestAci(m.color) : (layerDef ? (layerDef.aciColor || 1) : 1)));
+
+      const emitCommon = (type) => {
+        push(0, type);
+        if (useAcDb) {
+          push(5, nextHandleFn());
+          if (modelSpaceOwner) push(330, modelSpaceOwner);
+          push(100, 'AcDbEntity');
+        }
+        push(8, layerName, 62, aci);
+      };
 
       // Shape entity
       if (m.shape) {
         const s = m.shape;
         if (s.kind === 'circle') {
-          push(0, 'CIRCLE', 8, layerName, 6, ltype, 62, aci,
-            10, s.cx.toFixed(4), 20, s.cy.toFixed(4), 30, '0.0', 40, s.rx.toFixed(4));
+          emitCommon('CIRCLE');
+          if (useAcDb) push(100, 'AcDbCircle');
+          push(10, s.cx.toFixed(4), 20, s.cy.toFixed(4), 30, '0.0', 40, s.rx.toFixed(4));
         } else if (s.kind === 'ellipse') {
           const majorX = s.rx >= s.ry ? s.rx : 0;
           const majorY = s.rx >= s.ry ? 0 : s.ry;
           const ratio = s.rx >= s.ry ? (s.ry / Math.max(s.rx, 1e-6)) : (s.rx / Math.max(s.ry, 1e-6));
-          push(0, 'ELLIPSE', 8, layerName, 6, ltype, 62, aci,
-            10, s.cx.toFixed(4), 20, s.cy.toFixed(4), 30, '0.0',
+          emitCommon('ELLIPSE');
+          if (useAcDb) push(100, 'AcDbEllipse');
+          push(10, s.cx.toFixed(4), 20, s.cy.toFixed(4), 30, '0.0',
             11, majorX.toFixed(4), 21, majorY.toFixed(4), 31, '0.0',
             40, ratio.toFixed(4), 41, '0.0', 42, (Math.PI * 2).toFixed(6));
         } else if (s.points && s.points.length >= 2) {
-          push(0, 'LWPOLYLINE', 8, layerName, 6, ltype, 62, aci,
-            90, s.points.length, 70, s.closed ? 1 : 0);
+          emitCommon('LWPOLYLINE');
+          if (useAcDb) push(100, 'AcDbPolyline');
+          push(90, s.points.length, 70, s.closed ? 1 : 0, 43, '0.0');
           s.points.forEach(pt => {
             push(10, pt.x.toFixed(4), 20, pt.y.toFixed(4));
             if (pt.bulge) push(42, pt.bulge.toFixed(5));
@@ -1068,55 +1329,205 @@
         }
       }
 
-      // 2-Line Text Entity (Line 1: Damage Name, Line 2: Measurement Value directly below)
+      // Text Entities stacked UPWARD cleanly ABOVE m.y (100% WYSIWYG match with Canvas, never overlapping the shape!)
       const th = m.worldTextHeight || (baseTextHeight * (m.textScale || 1.0));
       const tx = m.x, ty = m.y;
-      push(0, 'TEXT', 8, layerName, 62, aci,
-        10, tx.toFixed(4), 20, ty.toFixed(4), 30, '0.0',
-        40, th.toFixed(4), 1, m.label || '');
-      let lineOffset = 1;
-      if (m.value && m.value.trim()) {
-        push(0, 'TEXT', 8, layerName, 62, aci,
-          10, tx.toFixed(4), 20, (ty - th * 1.45 * lineOffset).toFixed(4), 30, '0.0',
-          40, (th * 0.92).toFixed(4), 1, m.value.trim());
-        lineOffset++;
+      const textItems = [];
+      if (!m.photoOnly) {
+        if (m.label) textItems.push({ layer: layerName, text: m.label, h: th });
+        if (m.value && m.value.trim()) textItems.push({ layer: layerName, text: m.value.trim(), h: th * 0.92 });
       }
       if (m.photoNo && m.photoNo.trim()) {
-        push(0, 'TEXT', 8, layerName, 62, aci,
-          10, tx.toFixed(4), 20, (ty - th * 1.45 * lineOffset).toFixed(4), 30, '0.0',
-          40, (th * 0.85).toFixed(4), 1, '사진 ' + m.photoNo.trim());
+        textItems.push({ layer: layerName + '_사진번호', text: '사진 ' + m.photoNo.trim(), h: th * 0.85 });
       }
+
+      const bottomGap = th * 1.1;
+      const lineStep = th * 1.38;
+      const emitText = (tLayer, tX, tY, tH, tStr) => {
+        push(0, 'TEXT');
+        if (useAcDb) {
+          push(5, nextHandleFn());
+          if (modelSpaceOwner) push(330, modelSpaceOwner);
+          push(100, 'AcDbEntity');
+        }
+        push(8, tLayer, 62, aci);
+        if (useAcDb) push(100, 'AcDbText');
+        push(10, tX.toFixed(4), 20, tY.toFixed(4), 30, '0.0', 40, tH.toFixed(4), 1, tStr);
+        // Horizontal center alignment (72=1) with alignment point (11, 21, 31) so AutoCAD centers above the object
+        push(72, 1, 11, tX.toFixed(4), 21, tY.toFixed(4), 31, '0.0');
+        if (useAcDb) push(100, 'AcDbText', 73, 0);
+      };
+
+      const totalLines = textItems.length;
+      textItems.forEach((item, idx) => {
+        const lineY = ty + bottomGap + (totalLines - 1 - idx) * lineStep;
+        emitText(item.layer, tx, lineY, item.h, item.text);
+      });
     });
-    return out.join('\n');
+    return out;
   }
 
   function generateExportDxf(doc, config, baseTextHeight) {
-    const newEntities = buildDamageDxfEntities(doc.markings, config, baseTextHeight);
-    const layerEntries = config.layers.map(l =>
-      ['0', 'LAYER', '2', l.name, '70', '0', '62', String(l.aciColor || 1), '6', l.lineType || 'CONTINUOUS'].join('\n')
-    ).join('\n');
-
-    // If original DXF text exists, inject layers & entities cleanly to preserve 100% original geometry
-    if (doc.type === 'dxf' && doc.rawDxfText) {
-      let dxf = doc.rawDxfText.replace(/\r\n/g, '\n');
-      // Inject new layers before first ENDTAB after LAYER table
-      const layerTableIdx = dxf.search(/\n0\nTABLE\n2\nLAYER\b/);
-      if (layerTableIdx !== -1) {
-        const endTabIdx = dxf.indexOf('\n0\nENDTAB', layerTableIdx);
-        if (endTabIdx !== -1) {
-          dxf = dxf.slice(0, endTabIdx) + '\n' + layerEntries + dxf.slice(endTabIdx);
+    // Collect all layers needed (including {layer}_사진번호)
+    const layerMap = new Map();
+    config.layers.forEach(l => layerMap.set(l.name, { name: l.name, aciColor: l.aciColor || 1, lineType: l.lineType || 'CONTINUOUS' }));
+    doc.markings.forEach(m => {
+      const baseLayer = m.layer || '2026정밀 신규';
+      const aci = m.aciColor || 1;
+      if (!layerMap.has(baseLayer)) {
+        layerMap.set(baseLayer, { name: baseLayer, aciColor: aci, lineType: 'CONTINUOUS' });
+      }
+      if (m.photoNo && m.photoNo.trim()) {
+        const photoLayer = baseLayer + '_사진번호';
+        if (!layerMap.has(photoLayer)) {
+          layerMap.set(photoLayer, { name: photoLayer, aciColor: aci, lineType: 'CONTINUOUS' });
         }
       }
-      // Inject new entities right before ENTITIES ENDSEC
-      const entIdx = dxf.search(/\n2\nENTITIES\b/);
-      if (entIdx !== -1) {
-        const endSecIdx = dxf.indexOf('\n0\nENDSEC', entIdx);
-        if (endSecIdx !== -1) {
-          dxf = dxf.slice(0, endSecIdx) + '\n' + newEntities + dxf.slice(endSecIdx);
-          return dxf;
+    });
+    if (doc.parsed && doc.parsed.entities) {
+      doc.parsed.entities.forEach(e => {
+        if (e._overrideLayer && !layerMap.has(e._overrideLayer)) {
+          layerMap.set(e._overrideLayer, { name: e._overrideLayer, aciColor: e._overrideAci || 1, lineType: 'CONTINUOUS' });
         }
+      });
+    }
+
+    // If original DXF text exists, apply in-place entity edits & full AutoCAD R2000+ compliant TABLE/ENTITIES injection!
+    if (doc.type === 'dxf' && doc.rawDxfText) {
+      let rawLines = doc.rawDxfText.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+
+      // Detect R2000+ AcDb markers, max hex handle, and $HANDSEED using parity-safe scan
+      let useAcDb = false;
+      let maxHandle = 0xF0000;
+      let handseedValIdx = -1;
+      for (let k = 0; k + 1 < rawLines.length; k++) {
+        const c = rawLines[k].trim();
+        const v = rawLines[k + 1].trim();
+        if (c === '100' && v.startsWith('AcDb')) { useAcDb = true; k++; continue; }
+        if (c === '5' && /^[0-9A-Fa-f]{1,16}$/.test(v)) {
+          const parsedH = parseInt(v, 16);
+          if (!Number.isNaN(parsedH) && parsedH > maxHandle) maxHandle = parsedH;
+          k++; continue;
+        }
+        if (c === '9' && v === '$HANDSEED' && k + 3 < rawLines.length && rawLines[k + 2].trim() === '5') {
+          handseedValIdx = k + 3;
+          k += 3; continue;
+        }
+      }
+      let nextHandleNum = maxHandle + 32;
+      const nextHandle = () => (nextHandleNum++).toString(16).toUpperCase();
+
+      // 1. Apply in-place overrides to repaired/edited original DXF entities (bottom to top so line indices stay valid)
+      if (doc.parsed && doc.parsed.entities) {
+        const modified = doc.parsed.entities
+          .filter(e => (e._overrideLayer || e._overrideText != null) && Number.isFinite(e.startLine) && Number.isFinite(e.endLine))
+          .sort((a, b) => b.startLine - a.startLine);
+        modified.forEach(e => {
+          const seg = rawLines.slice(e.startLine, e.endLine);
+          let has8 = false, has62 = false, afterLayerIdx = -1, afterAcDbEntityIdx = -1;
+          for (let k = 0; k + 1 < seg.length; k += 2) {
+            const c = seg[k].trim();
+            const v = seg[k + 1].trim();
+            if (c === '100' && v === 'AcDbEntity') afterAcDbEntityIdx = k + 2;
+            if (c === '8') {
+              if (e._overrideLayer) seg[k + 1] = e._overrideLayer;
+              has8 = true;
+              afterLayerIdx = k + 2;
+            } else if (c === '62') {
+              const ovLayDef = e._overrideLayer ? config.layers.find(l => l.name === e._overrideLayer) : null;
+              const effOvAci = (state.colorMode === 'byLayer' && ovLayDef) ? (ovLayDef.aciColor || 1) : e._overrideAci;
+              if (effOvAci != null) seg[k + 1] = String(effOvAci);
+              has62 = true;
+            } else if (e._overrideText != null && c === '1') {
+              seg[k + 1] = e._overrideText.replace(/\n/g, '\\P');
+            }
+          }
+          const insert = [];
+          if (e._overrideLayer && !has8) insert.push('8', e._overrideLayer);
+          const ovLayDef2 = e._overrideLayer ? config.layers.find(l => l.name === e._overrideLayer) : null;
+          const effOvAci2 = (state.colorMode === 'byLayer' && ovLayDef2) ? (ovLayDef2.aciColor || 1) : e._overrideAci;
+          if (effOvAci2 != null && !has62) insert.push('62', String(effOvAci2));
+          if (insert.length) {
+            const insertAt = afterLayerIdx !== -1 ? afterLayerIdx : (afterAcDbEntityIdx !== -1 ? afterAcDbEntityIdx : 2);
+            seg.splice(insertAt, 0, ...insert);
+          }
+          rawLines.splice(e.startLine, e.endLine - e.startLine, ...seg);
+        });
+      }
+
+      // 2. Find existing LAYER table, capture owner 330 & plotstyle 390, and inject only missing layers (parity-safe!)
+      let layerTableEnd = -1, layerTableOwner = null, defaultPlotStyle = null;
+      const existingLayerNames = new Set();
+      for (let k = 0; k + 3 < rawLines.length; k++) {
+        if (rawLines[k].trim() === '0' && rawLines[k + 1].trim() === 'TABLE' &&
+            rawLines[k + 2].trim() === '2' && rawLines[k + 3].trim() === 'LAYER') {
+          let inLayerRec = false;
+          for (let m = k + 4; m + 1 < rawLines.length; m += 2) {
+            const mc = rawLines[m].trim(), mv = rawLines[m + 1].trim();
+            if (mc === '0' && mv === 'ENDTAB') { layerTableEnd = m; break; }
+            if (mc === '0' && mv === 'LAYER') { inLayerRec = true; continue; }
+            if (inLayerRec) {
+              if (mc === '2') existingLayerNames.add(mv);
+              else if (mc === '330' && !layerTableOwner) layerTableOwner = mv;
+              else if (mc === '390' && !defaultPlotStyle) defaultPlotStyle = mv;
+            } else if (mc === '5' && !layerTableOwner) {
+              layerTableOwner = mv;
+            }
+          }
+          break;
+        }
+      }
+      if (layerTableEnd !== -1) {
+        const layerLinesToInsert = [];
+        layerMap.forEach(l => {
+          if (existingLayerNames.has(l.name)) return;
+          layerLinesToInsert.push('0', 'LAYER');
+          if (useAcDb) {
+            layerLinesToInsert.push('5', nextHandle());
+            if (layerTableOwner) layerLinesToInsert.push('330', layerTableOwner);
+            layerLinesToInsert.push('100', 'AcDbSymbolTableRecord', '100', 'AcDbLayerTableRecord');
+          }
+          layerLinesToInsert.push('2', l.name, '70', '0', '62', String(l.aciColor || 1), '6', 'CONTINUOUS');
+          if (useAcDb) {
+            layerLinesToInsert.push('370', '-3');
+            if (defaultPlotStyle) layerLinesToInsert.push('390', defaultPlotStyle);
+          }
+        });
+        if (layerLinesToInsert.length) {
+          rawLines.splice(layerTableEnd, 0, ...layerLinesToInsert);
+          if (handseedValIdx > layerTableEnd) handseedValIdx += layerLinesToInsert.length;
+        }
+      }
+
+      // 3. Find ENTITIES section, capture ModelSpace 330 owner handle, and inject all new markings right before ENDSEC!
+      let entSecStart = -1, entSecEnd = -1, modelSpaceOwner = null;
+      for (let k = 0; k + 3 < rawLines.length; k++) {
+        if (rawLines[k].trim() === '0' && rawLines[k + 1].trim() === 'SECTION' &&
+            rawLines[k + 2].trim() === '2' && rawLines[k + 3].trim() === 'ENTITIES') {
+          entSecStart = k + 4;
+          for (let m = entSecStart; m + 1 < rawLines.length; m += 2) {
+            const mc = rawLines[m].trim(), mv = rawLines[m + 1].trim();
+            if (mc === '0' && mv === 'ENDSEC') { entSecEnd = m; break; }
+            if (mc === '330' && !modelSpaceOwner) modelSpaceOwner = mv;
+          }
+          break;
+        }
+      }
+      if (entSecEnd !== -1) {
+        const newEntityLines = buildDamageDxfEntities(doc.markings, config, baseTextHeight, nextHandle, useAcDb, modelSpaceOwner);
+        if (newEntityLines.length) rawLines.splice(entSecEnd, 0, ...newEntityLines);
+        if (handseedValIdx !== -1) rawLines[handseedValIdx] = nextHandle();
+        return rawLines.join('\r\n');
       }
     }
+
+    // Standalone DXF (for PDF drawings or fallback)
+    let fallbackHandle = 0x100;
+    const nextFbHandle = () => (fallbackHandle++).toString(16).toUpperCase();
+    const newEntities = buildDamageDxfEntities(doc.markings, config, baseTextHeight, nextFbHandle, false, null).join('\r\n');
+    const layerEntries = Array.from(layerMap.values()).map(l =>
+      ['0', 'LAYER', '2', l.name, '70', '0', '62', String(l.aciColor || 1), '6', l.lineType || 'CONTINUOUS'].join('\r\n')
+    ).join('\r\n');
 
     // Standalone DXF (for PDF drawings or fallback)
     const parts = [
@@ -1148,23 +1559,31 @@
   /* =========================================================================
    * 6. APPLICATION STATE & STORAGE
    * ========================================================================= */
-  const STORAGE_KEY_CONFIG = 'bridgecad_config_v1';
-  const STORAGE_KEY_DOCS = 'bridgecad_docs_meta_v1';
+  const STORAGE_KEY_CONFIG = 'bridgecad_config_v4';
+  const STORAGE_KEY_DOCS = 'bridgecad_docs_meta_v3';
 
   const state = {
     config: JSON.parse(JSON.stringify(DEFAULT_CONFIG)),
     docs: [],
     activeDocId: null,
     mode: 'select', // 'select' | 'text' | 'draw'
+    activeLayer: '2026정밀 신규',
+    colorMode: 'custom', // 'custom' (user-picked color) | 'byLayer' (layer's configured color)
+    activeColor: '#FF0000',
+    activeAciColor: 1,
     activeDamageIdx: 0,
     activeShape: 'crack',
     autoBeautify: true,
     beautifyStrength: 'medium',
     lightBg: false,
     showBaseDrawing: true,
+    showPhotoNo: true,
+    damagePickerCategory: '전체',
     hiddenLayers: {},
     textScale: 1.0,
     selectedMarkingId: null,
+    hoverBaseEntity: null,
+    repairSel: { baseSet: new Set(), markingIds: new Set(), lastClickWorld: null },
     view: { offsetX: 0, offsetY: 0, scale: 0.05 }, // worldToScreen: sx = wx*scale + offsetX, sy = -wy*scale + offsetY
     pointer: {
       isDown: false,
@@ -1205,18 +1624,115 @@
     safeStorageSet(STORAGE_KEY_CONFIG, JSON.stringify(state.config));
   }
 
-  function saveDocsToStorage() {
-    // Save DXF docs and markings metadata (skip huge PDF binary buffers if exceeding quota)
-    const serializable = state.docs.map(d => ({
+  const IDB_NAME = 'BridgeCAD_AutoSave_DB';
+  const IDB_STORE = 'workspace_v1';
+
+  function idbOpen() {
+    return new Promise((resolve, reject) => {
+      try {
+        if (!window.indexedDB) { reject(new Error('no idb')); return; }
+        const req = indexedDB.open(IDB_NAME, 1);
+        req.onupgradeneeded = () => {
+          if (!req.result.objectStoreNames.contains(IDB_STORE)) {
+            req.result.createObjectStore(IDB_STORE);
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      } catch (err) { reject(err); }
+    });
+  }
+
+  async function idbPut(key, value) {
+    try {
+      const db = await idbOpen();
+      return await new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put(value, key);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (_) { return false; }
+  }
+
+  async function idbGet(key) {
+    try {
+      const db = await idbOpen();
+      return await new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const req = tx.objectStore(IDB_STORE).get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    } catch (_) { return null; }
+  }
+
+  function extractEntityOverrides(doc) {
+    const overrides = [];
+    if (doc && doc.parsed && doc.parsed.entities) {
+      doc.parsed.entities.forEach((e, idx) => {
+        if (e._overrideLayer || e._overrideColor || e._overrideAci != null || e._overrideText != null) {
+          overrides.push({
+            idx,
+            layer: e._overrideLayer || null,
+            color: e._overrideColor || null,
+            aci: e._overrideAci != null ? e._overrideAci : null,
+            text: e._overrideText != null ? e._overrideText : null
+          });
+        }
+      });
+    }
+    return overrides;
+  }
+
+  function applyEntityOverrides(doc, overrides) {
+    if (!doc || !doc.parsed || !doc.parsed.entities || !Array.isArray(overrides)) return;
+    overrides.forEach(ov => {
+      const e = doc.parsed.entities[ov.idx];
+      if (!e) return;
+      if (ov.layer) e._overrideLayer = ov.layer;
+      if (ov.color) e._overrideColor = ov.color;
+      if (ov.aci != null) e._overrideAci = ov.aci;
+      if (ov.text != null) e._overrideText = ov.text;
+    });
+  }
+
+  function serializeDocs() {
+    return state.docs.map(d => ({
       id: d.id,
       name: d.name,
       type: d.type,
       createdAt: d.createdAt,
       rawDxfText: d.type === 'dxf' ? d.rawDxfText : null,
       pdfWorldWidth: d.pdfWorldWidth || 20000,
-      markings: d.markings || []
+      markings: d.markings || [],
+      entityOverrides: extractEntityOverrides(d)
     }));
+  }
+
+  function updateSaveStatusBadge() {
+    const el = document.getElementById('lblSaveStatus');
+    if (!el) return;
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    el.textContent = `저장됨 ${hh}:${mm}`;
+  }
+
+  function saveDocsToStorage(showNotice = false) {
+    const serializable = serializeDocs();
+    // 1. Primary: IndexedDB (supports large real-world DXF files safely without 5MB limit)
+    idbPut('docs', serializable).then(ok => {
+      if (ok) updateSaveStatusBadge();
+    });
+    // 2. Fallback: localStorage (for small drawings)
     safeStorageSet(STORAGE_KEY_DOCS, JSON.stringify(serializable));
+    updateSaveStatusBadge();
+    if (showNotice) {
+      const doc = getActiveDoc();
+      const cnt = doc ? doc.markings.length : 0;
+      showToast(`중간 저장 완료 (마킹 ${cnt}건 · 기기 저장소에 안전하게 보관됨)`, 'success');
+    }
   }
 
   function getActiveDoc() {
@@ -1237,10 +1753,52 @@
   /* =========================================================================
    * 7. UNDO / REDO HISTORY
    * ========================================================================= */
+  function captureDocSnapshot(doc) {
+    const overrides = [];
+    if (doc.parsed && doc.parsed.entities) {
+      doc.parsed.entities.forEach((e, idx) => {
+        if (e._overrideLayer || e._overrideColor || e._overrideAci != null || e._overrideText != null) {
+          overrides.push({
+            idx,
+            layer: e._overrideLayer || null,
+            color: e._overrideColor || null,
+            aci: e._overrideAci != null ? e._overrideAci : null,
+            text: e._overrideText != null ? e._overrideText : null
+          });
+        }
+      });
+    }
+    return JSON.stringify({ markings: doc.markings, overrides });
+  }
+
+  function restoreDocSnapshot(doc, rawSnap) {
+    const snap = JSON.parse(rawSnap);
+    doc.markings = Array.isArray(snap) ? snap : (snap.markings || []);
+    if (doc.parsed && doc.parsed.entities) {
+      doc.parsed.entities.forEach(e => {
+        delete e._overrideLayer;
+        delete e._overrideColor;
+        delete e._overrideAci;
+        delete e._overrideText;
+      });
+      if (snap.overrides) {
+        snap.overrides.forEach(ov => {
+          const e = doc.parsed.entities[ov.idx];
+          if (e) {
+            if (ov.layer) e._overrideLayer = ov.layer;
+            if (ov.color) e._overrideColor = ov.color;
+            if (ov.aci != null) e._overrideAci = ov.aci;
+            if (ov.text != null) e._overrideText = ov.text;
+          }
+        });
+      }
+    }
+  }
+
   function pushUndo() {
     const doc = getActiveDoc();
     if (!doc) return;
-    state.history.undo.push(JSON.stringify(doc.markings));
+    state.history.undo.push(captureDocSnapshot(doc));
     if (state.history.undo.length > 40) state.history.undo.shift();
     state.history.redo = [];
     updateHistoryButtons();
@@ -1249,9 +1807,10 @@
   function doUndo() {
     const doc = getActiveDoc();
     if (!doc || !state.history.undo.length) return;
-    state.history.redo.push(JSON.stringify(doc.markings));
-    doc.markings = JSON.parse(state.history.undo.pop());
+    state.history.redo.push(captureDocSnapshot(doc));
+    restoreDocSnapshot(doc, state.history.undo.pop());
     state.selectedMarkingId = null;
+    clearRepairSelection();
     saveDocsToStorage();
     updateHistoryButtons();
     renderMarkingsPanel();
@@ -1261,9 +1820,10 @@
   function doRedo() {
     const doc = getActiveDoc();
     if (!doc || !state.history.redo.length) return;
-    state.history.undo.push(JSON.stringify(doc.markings));
-    doc.markings = JSON.parse(state.history.redo.pop());
+    state.history.undo.push(captureDocSnapshot(doc));
+    restoreDocSnapshot(doc, state.history.redo.pop());
     state.selectedMarkingId = null;
+    clearRepairSelection();
     saveDocsToStorage();
     updateHistoryButtons();
     renderMarkingsPanel();
@@ -1395,12 +1955,21 @@
         ctx.save();
         ctx.lineWidth = 1.25;
         entities.forEach(e => {
-          if (state.hiddenLayers['BASE:' + e.layer]) return;
+          const effLayer = e._overrideLayer || e.layer;
+          if (e._overrideLayer && state.hiddenLayers['DMG:' + effLayer]) return;
+          if (!e._overrideLayer && state.hiddenLayers['BASE:' + e.layer]) return;
           const lay = layers[e.layer];
           const aci = e.color != null ? e.color : (lay ? lay.aciColor : 7);
-          const col = aciToHex(aci, state.lightBg);
+          let col = aciToHex(aci, state.lightBg);
+          if (e._overrideLayer || e._overrideColor) {
+            const ovLayDef = e._overrideLayer ? state.config.layers.find(l => l.name === e._overrideLayer) : null;
+            col = (state.colorMode === 'byLayer' && ovLayDef)
+              ? ovLayDef.color
+              : (e._overrideColor || (ovLayDef ? ovLayDef.color : col));
+          }
           ctx.strokeStyle = col;
           ctx.fillStyle = col;
+          ctx.lineWidth = (e._overrideLayer || e._overrideColor) ? 2.4 : 1.25;
           applyLineDash(ctx, lay ? lay.lineType : 'CONTINUOUS');
 
           if (e.type === 'LINE') {
@@ -1444,17 +2013,51 @@
           } else if (e.type === 'TEXT') {
             const p = worldToScreen(e.x, e.y);
             const pxH = e.height * state.view.scale;
-            if (pxH >= 5) {
-              ctx.save();
+            const drawH = Math.min(pxH, 240);
+            const displayText = e._overrideText != null ? e._overrideText : (e.text || '');
+            const lines = displayText.split('\n');
+            ctx.save();
+            ctx.font = `500 ${Math.max(drawH, 6)}px 'Inter', 'Noto Sans KR', sans-serif`;
+            let maxW = 0;
+            lines.forEach(line => { maxW = Math.max(maxW, ctx.measureText(line).width); });
+            const totalH = Math.max(drawH, 8) * Math.max(1, lines.length) * 1.2;
+            e._screenBox = { x: p.x - 4, y: p.y - drawH - 4, w: Math.max(maxW, 12) + 8, h: totalH + 8 };
+            if (pxH >= 3) {
               ctx.translate(p.x, p.y);
               if (e.rotation) ctx.rotate(-e.rotation * Math.PI / 180);
-              ctx.font = `500 ${Math.min(pxH, 240)}px 'Inter', 'Noto Sans KR', sans-serif`;
+              ctx.font = `500 ${drawH}px 'Inter', 'Noto Sans KR', sans-serif`;
               ctx.textBaseline = 'alphabetic';
-              e.text.split('\n').forEach((line, idx) => {
-                ctx.fillText(line, 0, idx * pxH * 1.25);
+              lines.forEach((line, idx) => {
+                ctx.fillText(line, 0, idx * drawH * 1.25);
               });
-              ctx.restore();
             }
+            ctx.restore();
+          }
+
+          // Live hover OR pending multi-selection glow in repairPick / editText mode
+          const isRepairPicked = state.repairSel.baseSet.has(e);
+          if ((state.mode === 'repairPick' || state.mode === 'editText') && (isRepairPicked || state.hoverBaseEntity === e)) {
+            ctx.save();
+            ctx.strokeStyle = isRepairPicked ? '#facc15' : '#38bdf8';
+            ctx.lineWidth = isRepairPicked ? 4.5 : 3.5;
+            ctx.setLineDash([]);
+            if (e.type === 'TEXT' && e._screenBox) {
+              ctx.strokeRect(e._screenBox.x, e._screenBox.y, e._screenBox.w, e._screenBox.h);
+            } else if (e.type === 'LINE') {
+              const p1 = worldToScreen(e.x1, e.y1), p2 = worldToScreen(e.x2, e.y2);
+              ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+            } else if (e.type === 'LWPOLYLINE' && e.points.length >= 2) {
+              ctx.beginPath();
+              const f = worldToScreen(e.points[0].x, e.points[0].y);
+              ctx.moveTo(f.x, f.y);
+              for (let k = 0; k < e.points.length - 1; k++) drawBulgeSegment(ctx, e.points[k], e.points[k + 1], e.points[k].bulge);
+              if (e.closed) drawBulgeSegment(ctx, e.points[e.points.length - 1], e.points[0], e.points[e.points.length - 1].bulge);
+              ctx.stroke();
+            } else if (e.type === 'CIRCLE') {
+              const c = worldToScreen(e.cx, e.cy);
+              ctx.beginPath(); ctx.arc(c.x, c.y, Math.max(2, e.r * state.view.scale), 0, Math.PI * 2); ctx.stroke();
+            }
+            ctx.restore();
           }
         });
         ctx.restore();
@@ -1466,10 +2069,13 @@
     doc.markings.forEach(m => {
       if (state.hiddenLayers['DMG:' + m.layer]) return;
       const layerDef = state.config.layers.find(l => l.name === m.layer) || { color: '#FF0000', lineType: 'CONTINUOUS' };
+      const drawColor = state.colorMode === 'byLayer'
+        ? (layerDef.color || '#FF0000')
+        : (m.color || layerDef.color || '#FF0000');
       const isSelected = m.id === state.selectedMarkingId;
       ctx.save();
-      ctx.strokeStyle = layerDef.color;
-      ctx.fillStyle = layerDef.color;
+      ctx.strokeStyle = drawColor;
+      ctx.fillStyle = drawColor;
       ctx.lineWidth = isSelected ? 3.2 : 2.2;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
@@ -1482,13 +2088,13 @@
           const c = worldToScreen(s.cx, s.cy);
           ctx.arc(c.x, c.y, Math.max(2, s.rx * state.view.scale), 0, Math.PI * 2);
           ctx.stroke();
-          ctx.fillStyle = layerDef.color + '18';
+          ctx.fillStyle = drawColor + '18';
           ctx.fill();
         } else if (s.kind === 'ellipse') {
           const c = worldToScreen(s.cx, s.cy);
           ctx.ellipse(c.x, c.y, Math.max(2, s.rx * state.view.scale), Math.max(2, s.ry * state.view.scale), 0, 0, Math.PI * 2);
           ctx.stroke();
-          ctx.fillStyle = layerDef.color + '18';
+          ctx.fillStyle = drawColor + '18';
           ctx.fill();
         } else if (s.points && s.points.length >= 2) {
           const first = worldToScreen(s.points[0].x, s.points[0].y);
@@ -1501,7 +2107,7 @@
           }
           ctx.stroke();
           if (s.closed) {
-            ctx.fillStyle = layerDef.color + '18';
+            ctx.fillStyle = drawColor + '18';
             ctx.fill();
           }
         }
@@ -1517,101 +2123,121 @@
         ctx.restore();
         return;
       }
-      const padX = fontPx * 0.3;
-      const padY = fontPx * 0.2;
-      const gapPx = fontPx * 0.28;
-      ctx.font = `700 ${fontPx}px 'Noto Sans KR', 'Inter', sans-serif`;
-      const line1 = m.label || '';
-      const line2 = m.value || '';
-      const line3 = (m.photoNo && m.photoNo.trim()) ? ('사진 ' + m.photoNo.trim()) : '';
-      const w1 = ctx.measureText(line1).width;
-      ctx.font = `600 ${fontPx * 0.9}px 'Inter', monospace`;
-      const w2 = line2 ? ctx.measureText(line2).width : 0;
-      ctx.font = `600 ${fontPx * 0.82}px 'Inter', monospace`;
-      const w3 = line3 ? ctx.measureText(line3).width : 0;
-      const lineCount = 1 + (line2 ? 1 : 0) + (line3 ? 1 : 0);
-      const boxW = Math.max(w1, w2, w3) + padX * 2;
-      const boxH = (fontPx * (1.15 + (lineCount - 1) * 1.05)) + padY * 2;
+      const line1 = m.photoOnly ? '' : (m.label || '');
+      const line2 = m.photoOnly ? '' : (m.value || '');
+      const line3 = (state.showPhotoNo && m.photoNo && m.photoNo.trim())
+        ? ('사진 ' + m.photoNo.trim())
+        : (m.photoOnly && !m.isTextEdit && isSelected ? '사진 (입력중)' : '');
 
-      let bx, by, textX, line1Y;
-      if (!m.shape) {
-        // Pin marker scaled in World Coordinates right next to the label
+      const drawLines = [];
+      if (line1) drawLines.push({ text: line1, font: `700 ${fontPx}px 'Noto Sans KR', 'Inter', sans-serif` });
+      if (line2) drawLines.push({ text: line2, font: `600 ${fontPx * 0.92}px 'Inter', monospace` });
+      if (line3) drawLines.push({ text: line3, font: `600 ${fontPx * 0.85}px 'Inter', monospace` });
+
+      if (!drawLines.length) {
+        m._hitBox = { x: pos.x - 6, y: pos.y - 6, w: 12, h: 12 };
+        ctx.restore();
+        return;
+      }
+
+      // Pin dot for point-only non-repair markings
+      if (!m.shape && !m.photoOnly) {
         const pinR = Math.max(1.5, fontPx * 0.26);
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, pinR, 0, Math.PI * 2);
-        ctx.fillStyle = layerDef.color;
+        ctx.fillStyle = drawColor;
         ctx.fill();
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = Math.max(0.6, pinR * 0.3);
         ctx.stroke();
+      }
 
-        bx = pos.x + pinR + gapPx;
-        by = pos.y - boxH / 2;
-        textX = bx + padX;
-        line1Y = by + padY + fontPx * 0.92;
-      } else {
-        // Shape label sits snugly right above its anchor point in true World proportion
-        bx = pos.x - boxW / 2;
-        by = pos.y - boxH - gapPx;
-        textX = bx + padX;
-        line1Y = by + padY + fontPx * 0.92;
+      // Exact same upward-stacked top-center geometry as DXF Export (100% WYSIWYG!)
+      const bottomGapPx = fontPx * 1.1;
+      const lineStepPx = fontPx * 1.38;
+      const padX = fontPx * 0.25;
+      const padY = fontPx * 0.2;
+      let maxW = 0;
+      drawLines.forEach(item => {
+        ctx.font = item.font;
+        maxW = Math.max(maxW, ctx.measureText(item.text).width);
+      });
+      const totalLines = drawLines.length;
+      const topBaselineY = pos.y - bottomGapPx - (totalLines - 1) * lineStepPx;
+      const bottomBaselineY = pos.y - bottomGapPx;
+      const bx = pos.x - maxW / 2 - padX;
+      const by = topBaselineY - fontPx - padY;
+      const boxW = maxW + padX * 2;
+      const boxH = (bottomBaselineY - topBaselineY) + fontPx + padY * 2;
 
-        // Draw subtle leader line if label was manually moved away from shape anchor
-        if (m.shape.anchor) {
-          const sa = worldToScreen(m.shape.anchor.x, m.shape.anchor.y);
-          const distPx = Math.hypot(pos.x - sa.x, pos.y - sa.y);
-          if (distPx > 14) {
-            ctx.save();
-            ctx.strokeStyle = layerDef.color + 'aa';
-            ctx.lineWidth = 1.2;
-            ctx.setLineDash([3, 3]);
-            ctx.beginPath();
-            ctx.moveTo(sa.x, sa.y);
-            ctx.lineTo(pos.x, by + boxH);
-            ctx.stroke();
-            ctx.restore();
-          }
+      // Subtle leader line if label was manually dragged away from shape anchor
+      if (m.shape && m.shape.anchor) {
+        const sa = worldToScreen(m.shape.anchor.x, m.shape.anchor.y);
+        const distPx = Math.hypot(pos.x - sa.x, pos.y - sa.y);
+        if (distPx > 14) {
+          ctx.save();
+          ctx.strokeStyle = drawColor + 'aa';
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(sa.x, sa.y);
+          ctx.lineTo(pos.x, by + boxH);
+          ctx.stroke();
+          ctx.restore();
         }
       }
 
-      // Subtle pill background for crisp legibility on busy CAD lines
-      ctx.fillStyle = state.lightBg ? 'rgba(255,255,255,0.88)' : 'rgba(15,23,42,0.84)';
-      ctx.strokeStyle = isSelected ? '#ffffff' : layerDef.color + '99';
-      ctx.lineWidth = isSelected ? 2 : 1;
-      roundRect(ctx, bx, by, boxW, boxH, Math.max(2, Math.min(6, fontPx * 0.35)));
-      ctx.fill();
-      ctx.stroke();
+      // Borderless clean CAD text (subtle dashed outline only when selected or queued for repair)
+      const isRepairMarked = state.repairSel.markingIds.has(m.id);
+      if (isSelected || isRepairMarked) {
+        ctx.save();
+        ctx.strokeStyle = isRepairMarked ? '#facc15' : '#ffffff';
+        ctx.lineWidth = isRepairMarked ? 2 : 1.2;
+        ctx.setLineDash([4, 3]);
+        roundRect(ctx, bx, by, boxW, boxH, Math.max(2, fontPx * 0.2));
+        ctx.stroke();
+        ctx.restore();
+      }
 
-      // Draw text lines
-      ctx.fillStyle = layerDef.color;
+      // Draw borderless crisp centered text lines stacked cleanly ABOVE pos.y (matches DXF 100%)
+      ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
-      ctx.font = `700 ${fontPx}px 'Noto Sans KR', 'Inter', sans-serif`;
-      ctx.fillText(line1, textX, line1Y);
-      let nextY = line1Y + fontPx * 1.08;
-      if (line2) {
-        ctx.font = `600 ${fontPx * 0.9}px 'Inter', monospace`;
-        ctx.fillStyle = state.lightBg ? '#0f172a' : '#f8fafc';
-        ctx.fillText(line2, textX, nextY);
-        nextY += fontPx * 1.02;
-      }
-      if (line3) {
-        ctx.font = `600 ${fontPx * 0.82}px 'Inter', monospace`;
-        ctx.fillStyle = state.lightBg ? '#0369a1' : '#38bdf8';
-        ctx.fillText(line3, textX, nextY);
-      }
+      ctx.fillStyle = drawColor;
+      drawLines.forEach((item, idx) => {
+        const lineY = pos.y - bottomGapPx - (totalLines - 1 - idx) * lineStepPx;
+        ctx.font = item.font;
+        ctx.fillText(item.text, pos.x, lineY);
+      });
+      ctx.textAlign = 'left';
 
       // Store screen hit box for selection & dragging
       m._hitBox = { x: bx, y: by, w: boxW, h: boxH };
       ctx.restore();
     });
 
-    // 3. Render Active Drawing Preview (live rectangle / circle / freehand stroke)
+    // 3a. Render Repair Box-Selection Preview
+    if (state.pointer.action === 'repairBox') {
+      const rx = Math.min(state.pointer.startX, state.pointer.lastX);
+      const ry = Math.min(state.pointer.startY, state.pointer.lastY);
+      const rw = Math.abs(state.pointer.lastX - state.pointer.startX);
+      const rh = Math.abs(state.pointer.lastY - state.pointer.startY);
+      ctx.save();
+      ctx.fillStyle = (state.activeColor || '#00CC55') + '26';
+      ctx.strokeStyle = state.activeColor || '#00CC55';
+      ctx.lineWidth = 1.8;
+      ctx.setLineDash([5, 3]);
+      ctx.fillRect(rx, ry, rw, rh);
+      ctx.strokeRect(rx, ry, rw, rh);
+      ctx.restore();
+    }
+
+    // 3b. Render Active Drawing Preview (live rectangle / circle / freehand stroke)
     if (state.pointer.action === 'draw' && state.pointer.rawStroke.length > 1) {
-      const dmg = state.config.damages[state.activeDamageIdx] || state.config.damages[0];
-      const lay = state.config.layers.find(l => l.name === dmg.layer) || { color: '#FF0000' };
+      const actLayDef = state.config.layers.find(l => l.name === state.activeLayer);
+      const previewColor = state.colorMode === 'byLayer' ? (actLayDef ? actLayDef.color : '#FF0000') : (state.activeColor || '#FF0000');
       const pts = state.pointer.rawStroke;
       ctx.save();
-      ctx.strokeStyle = lay.color;
+      ctx.strokeStyle = previewColor;
       ctx.lineWidth = 2.2;
 
       if (state.autoBeautify && (state.activeShape === 'rect' || state.activeShape === 'circle')) {
@@ -1626,7 +2252,7 @@
         const br = worldToScreen(maxX, minY);
         const rw = Math.max(2, br.x - tl.x);
         const rh = Math.max(2, br.y - tl.y);
-        ctx.fillStyle = lay.color + '24';
+        ctx.fillStyle = previewColor + '24';
         ctx.setLineDash([6, 4]);
         if (state.activeShape === 'rect') {
           ctx.fillRect(tl.x, tl.y, rw, rh);
@@ -1784,6 +2410,11 @@
     } else if (state.mode === 'draw') {
       state.pointer.action = 'draw';
       state.pointer.rawStroke = [{ x: wpt.x, y: wpt.y }];
+    } else if (state.mode === 'repairPick') {
+      state.pointer.action = 'repairBox';
+    } else if (state.mode === 'editText') {
+      handleEditTextClick(sx, sy);
+      state.pointer.action = null;
     }
   });
 
@@ -1813,7 +2444,18 @@
       return;
     }
 
-    if (!state.pointer.isDown) return;
+    if (!state.pointer.isDown) {
+      if (state.mode === 'repairPick' || state.mode === 'editText') {
+        const doc = getActiveDoc();
+        const prevHover = state.hoverBaseEntity;
+        state.hoverBaseEntity = (doc && doc.parsed && doc.parsed.entities) ? findTopBaseEntityAt(doc.parsed.entities, sx, sy) : null;
+        if (prevHover !== state.hoverBaseEntity) renderCanvas();
+      } else if (state.hoverBaseEntity) {
+        state.hoverBaseEntity = null;
+        renderCanvas();
+      }
+      return;
+    }
 
     const dx = sx - state.pointer.lastX;
     const dy = sy - state.pointer.lastY;
@@ -1845,6 +2487,8 @@
         state.pointer.rawStroke.push({ x: wpt.x, y: wpt.y });
         renderCanvas();
       }
+    } else if (state.pointer.action === 'repairBox') {
+      renderCanvas();
     } else if (state.pointer.action === 'draw') {
       const last = state.pointer.rawStroke[state.pointer.rawStroke.length - 1];
       if (!last || Math.hypot(wpt.x - last.x, wpt.y - last.y) > (2 / state.view.scale)) {
@@ -1865,6 +2509,13 @@
     } else if (state.pointer.action === 'textOrDraw') {
       createTextMarking(state.pointer.worldX, state.pointer.worldY);
       state.pointer.rawStroke = [];
+      renderCanvas();
+    } else if (state.pointer.action === 'repairBox') {
+      const rect = canvas.getBoundingClientRect();
+      const endX = Number.isFinite(e.clientX) ? (e.clientX - rect.left) : state.pointer.lastX;
+      const endY = Number.isFinite(e.clientY) ? (e.clientY - rect.top) : state.pointer.lastY;
+      state.pointer.action = null;
+      handleRepairSelection(state.pointer.startX, state.pointer.startY, endX, endY);
       renderCanvas();
     } else if (state.pointer.action === 'draw') {
       const pts = state.pointer.rawStroke;
@@ -1910,7 +2561,9 @@
     const marking = {
       id,
       label: dmg.label,
-      layer: dmg.layer,
+      layer: state.activeLayer || (state.config.layers[0] ? state.config.layers[0].name : '2026정밀 신규'),
+      color: getEffectiveActiveColor(),
+      aciColor: getEffectiveActiveAci(),
       value: '',
       photoNo: '',
       x: wx,
@@ -1939,7 +2592,9 @@
     const marking = {
       id,
       label: dmg.label,
-      layer: dmg.layer,
+      layer: state.activeLayer || (state.config.layers[0] ? state.config.layers[0].name : '2026정밀 신규'),
+      color: getEffectiveActiveColor(),
+      aciColor: getEffectiveActiveAci(),
       value: '',
       photoNo: '',
       x: shape.anchor.x,
@@ -1969,6 +2624,10 @@
     if (m) {
       bar.classList.remove('hidden');
       document.getElementById('selectedSummary').textContent = `${m.label}${m.value ? ' · ' + m.value : ''}${m.photoNo ? ' [사진 ' + m.photoNo + ']' : ''}`;
+      const selLay = document.getElementById('selSelectedLayer');
+      selLay.innerHTML = state.config.layers.map(l => `<option value="${escapeHtml(l.name)}" ${l.name === m.layer ? 'selected' : ''}>${escapeHtml(l.name)}</option>`).join('');
+      const layDef = state.config.layers.find(l => l.name === m.layer);
+      document.getElementById('inpSelectedColor').value = m.color || (layDef ? layDef.color : '#FF0000');
     } else {
       bar.classList.add('hidden');
     }
@@ -2013,22 +2672,313 @@
     return 'P-' + String(maxNum + 1).padStart(2, '0');
   }
 
-  function openKeypadForMarking(id) {
+  function getBaseEntityBounds(e) {
+    if (e.type === 'LINE') {
+      return { minX: Math.min(e.x1, e.x2), minY: Math.min(e.y1, e.y2), maxX: Math.max(e.x1, e.x2), maxY: Math.max(e.y1, e.y2) };
+    }
+    if (e.type === 'LWPOLYLINE' && e.points && e.points.length) {
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      e.points.forEach(pt => { if (pt.x < minX) minX = pt.x; if (pt.y < minY) minY = pt.y; if (pt.x > maxX) maxX = pt.x; if (pt.y > maxY) maxY = pt.y; });
+      return { minX, minY, maxX, maxY };
+    }
+    if (e.type === 'CIRCLE' || e.type === 'ARC') {
+      return { minX: e.cx - e.r, minY: e.cy - e.r, maxX: e.cx + e.r, maxY: e.cy + e.r };
+    }
+    if (e.type === 'ELLIPSE') {
+      const r = Math.hypot(e.mx, e.my);
+      return { minX: e.cx - r, minY: e.cy - r, maxX: e.cx + r, maxY: e.cy + r };
+    }
+    if (e.type === 'TEXT') {
+      const tw = Math.max(e.height * (e.text ? e.text.length : 2) * 0.65, e.height);
+      return { minX: e.x, minY: e.y, maxX: e.x + tw, maxY: e.y + e.height };
+    }
+    return null;
+  }
+
+  function isBaseEntityHitPoint(e, sx, sy, wpt, tol) {
+    if (e.type === 'TEXT') {
+      if (e._screenBox) {
+        const b = e._screenBox;
+        if (sx >= b.x - 10 && sx <= b.x + b.w + 10 && sy >= b.y - 10 && sy <= b.y + b.h + 10) return true;
+      }
+      const b = getBaseEntityBounds(e);
+      return b && wpt.x >= b.minX - tol && wpt.x <= b.maxX + tol && wpt.y >= b.minY - tol && wpt.y <= b.maxY + tol;
+    }
+    if (e.type === 'LINE') return distPtToSeg(wpt, { x: e.x1, y: e.y1 }, { x: e.x2, y: e.y2 }) <= tol;
+    if (e.type === 'LWPOLYLINE' && e.points.length >= 2) {
+      for (let k = 0; k < e.points.length - 1; k++) {
+        if (distPtToSeg(wpt, e.points[k], e.points[k + 1]) <= tol) return true;
+      }
+      if (e.closed && distPtToSeg(wpt, e.points[e.points.length - 1], e.points[0]) <= tol) return true;
+      return false;
+    }
+    if (e.type === 'CIRCLE' || e.type === 'ARC') {
+      const d = Math.hypot(wpt.x - e.cx, wpt.y - e.cy);
+      return Math.abs(d - e.r) <= tol || (e.type === 'CIRCLE' && d <= e.r);
+    }
+    if (e.type === 'ELLIPSE') {
+      const r = Math.hypot(e.mx, e.my);
+      return Math.hypot(wpt.x - e.cx, wpt.y - e.cy) <= r + tol;
+    }
+    return false;
+  }
+
+  function findTopBaseEntityAt(entities, sx, sy) {
+    const wpt = screenToWorld(sx, sy);
+    const tol = 22 / state.view.scale;
+    // Prefer TEXT first so clicking text over a line always picks the text cleanly
+    for (let i = entities.length - 1; i >= 0; i--) {
+      if (entities[i].type === 'TEXT' && isBaseEntityHitPoint(entities[i], sx, sy, wpt, tol)) return entities[i];
+    }
+    for (let i = entities.length - 1; i >= 0; i--) {
+      if (entities[i].type !== 'TEXT' && isBaseEntityHitPoint(entities[i], sx, sy, wpt, tol)) return entities[i];
+    }
+    return null;
+  }
+
+  function handleRepairSelection(sx1, sy1, sx2, sy2) {
+    const doc = getActiveDoc();
+    if (!doc) return;
+    const isBox = Math.hypot(sx2 - sx1, sy2 - sy1) >= 8;
+    const hitMarkings = [];
+    const hitBase = [];
+
+    if (!isBox) {
+      const hm = hitTestMarking(sx2, sy2);
+      if (hm) hitMarkings.push(hm);
+      if (!hm && doc.parsed && doc.parsed.entities) {
+        const picked = findTopBaseEntityAt(doc.parsed.entities, sx2, sy2);
+        if (picked) hitBase.push(picked);
+      }
+    } else {
+      const boxMinSx = Math.min(sx1, sx2), boxMaxSx = Math.max(sx1, sx2);
+      const boxMinSy = Math.min(sy1, sy2), boxMaxSy = Math.max(sy1, sy2);
+      const wA = screenToWorld(boxMinSx, boxMaxSy);
+      const wB = screenToWorld(boxMaxSx, boxMinSy);
+      const rx1 = Math.min(wA.x, wB.x), rx2 = Math.max(wA.x, wB.x);
+      const ry1 = Math.min(wA.y, wB.y), ry2 = Math.max(wA.y, wB.y);
+      doc.markings.forEach(m => {
+        const hitBox = m._hitBox;
+        const inScreen = hitBox && !(hitBox.x + hitBox.w < boxMinSx || hitBox.x > boxMaxSx || hitBox.y + hitBox.h < boxMinSy || hitBox.y > boxMaxSy);
+        const inWorld = (m.x >= rx1 && m.x <= rx2 && m.y >= ry1 && m.y <= ry2);
+        if (inScreen || inWorld) hitMarkings.push(m);
+      });
+      if (doc.parsed && doc.parsed.entities) {
+        doc.parsed.entities.forEach(e => {
+          if (e.type === 'TEXT' && e._screenBox) {
+            const sb = e._screenBox;
+            if (!(sb.x + sb.w < boxMinSx || sb.x > boxMaxSx || sb.y + sb.h < boxMinSy || sb.y > boxMaxSy)) {
+              hitBase.push(e);
+              return;
+            }
+          }
+          const b = getBaseEntityBounds(e);
+          if (b && b.maxX >= rx1 && b.minX <= rx2 && b.maxY >= ry1 && b.minY <= ry2) {
+            hitBase.push(e);
+          }
+        });
+      }
+    }
+
+    // Fallback for PDF drawings (raster image has no vector entities): highlight dragged area + photo number
+    if (!hitMarkings.length && !hitBase.length) {
+      if (doc.type === 'pdf' && isBox) {
+        const wA = screenToWorld(Math.min(sx1, sx2), Math.max(sy1, sy2));
+        const wB = screenToWorld(Math.max(sx1, sx2), Math.min(sy1, sy2));
+        const rx1 = Math.min(wA.x, wB.x), rx2 = Math.max(wA.x, wB.x);
+        const ry1 = Math.min(wA.y, wB.y), ry2 = Math.max(wA.y, wB.y);
+        pushUndo();
+        const id = 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+        const rectShape = {
+          kind: 'rect', x: rx1, y: ry1, w: rx2 - rx1, h: ry2 - ry1,
+          points: [{ x: rx1, y: ry1, bulge: 0 }, { x: rx2, y: ry1, bulge: 0 }, { x: rx2, y: ry2, bulge: 0 }, { x: rx1, y: ry2, bulge: 0 }],
+          closed: true,
+          anchor: { x: (rx1 + rx2) / 2, y: ry2 }
+        };
+        doc.markings.push({
+          id, label: '보수', layer: state.activeLayer || '2026정밀 보수',
+          color: state.activeColor, aciColor: state.activeAciColor,
+          value: '', photoNo: '', photoOnly: true,
+          x: rectShape.anchor.x, y: rectShape.anchor.y,
+          textScale: state.textScale, worldTextHeight: getBaseTextHeight(doc) * state.textScale,
+          shape: rectShape
+        });
+        saveDocsToStorage(); selectMarking(id); renderMarkingsPanel(); renderCanvas();
+        openKeypadForMarking(id, true);
+        showToast('PDF 보수 영역 표시 완료 · 사진번호를 입력하세요.', 'success');
+        return;
+      }
+      showToast('선택된 객체가 없습니다. 선·글씨 위를 클릭하거나 드래그 박스로 감싸 보세요.', 'info');
+      return;
+    }
+
+    // Remember exact screen-visible World coordinate of user's click/drag center
+    state.repairSel.lastClickWorld = screenToWorld((sx1 + sx2) / 2, (sy1 + sy2) / 2);
+
+    // Multi-select accumulation: click toggles item; drag box adds all items inside box
+    if (!isBox) {
+      hitMarkings.forEach(m => {
+        if (state.repairSel.markingIds.has(m.id)) state.repairSel.markingIds.delete(m.id);
+        else state.repairSel.markingIds.add(m.id);
+      });
+      hitBase.forEach(e => {
+        if (state.repairSel.baseSet.has(e)) state.repairSel.baseSet.delete(e);
+        else state.repairSel.baseSet.add(e);
+      });
+    } else {
+      hitMarkings.forEach(m => state.repairSel.markingIds.add(m.id));
+      hitBase.forEach(e => state.repairSel.baseSet.add(e));
+    }
+    updateRepairSelectionBar();
+    renderCanvas();
+  }
+
+  function clearRepairSelection() {
+    state.repairSel.baseSet.clear();
+    state.repairSel.markingIds.clear();
+    updateRepairSelectionBar();
+    renderCanvas();
+  }
+
+  function updateRepairSelectionBar() {
+    const total = state.repairSel.baseSet.size + state.repairSel.markingIds.size;
+    const bar = document.getElementById('repairSelectionBar');
+    if (total > 0 && state.mode === 'repairPick') {
+      bar.classList.remove('hidden');
+      document.getElementById('repairSelCount').textContent = `선택 ${total}개`;
+    } else {
+      bar.classList.add('hidden');
+    }
+  }
+
+  function applyRepairSelection() {
+    const doc = getActiveDoc();
+    if (!doc) return;
+    const baseList = Array.from(state.repairSel.baseSet);
+    const markList = doc.markings.filter(m => state.repairSel.markingIds.has(m.id));
+    if (!baseList.length && !markList.length) return;
+
+    pushUndo();
+    const targetLayer = state.activeLayer || '2026정밀 보수';
+    const targetColor = getEffectiveActiveColor();
+    const targetAci = getEffectiveActiveAci();
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    const expandB = (x1, y1, x2, y2) => {
+      if (x1 < minX) minX = x1; if (y1 < minY) minY = y1;
+      if (x2 > maxX) maxX = x2; if (y2 > maxY) maxY = y2;
+    };
+
+    const baseHRef = getBaseTextHeight(doc);
+    markList.forEach(m => {
+      m.layer = targetLayer;
+      m.color = targetColor;
+      m.aciColor = targetAci;
+      const th = m.worldTextHeight || (baseHRef * (m.textScale || 1.0));
+      const linesCnt = (m.photoOnly ? 0 : 1) + (!m.photoOnly && m.value ? 1 : 0) + (m.photoNo ? 1 : 0);
+      const topTextY = m.y + th * (1.1 + Math.max(0, linesCnt - 1) * 1.38 + 1.1);
+      expandB(m.x, m.y, m.x, topTextY);
+      if (m.shape && m.shape.points) {
+        m.shape.points.forEach(pt => expandB(pt.x, pt.y, pt.x, pt.y));
+      } else if (m.shape && (m.shape.kind === 'circle' || m.shape.kind === 'ellipse')) {
+        expandB(m.shape.cx - m.shape.rx, m.shape.cy - m.shape.ry, m.shape.cx + m.shape.rx, m.shape.cy + m.shape.ry);
+      }
+    });
+
+    baseList.forEach(e => {
+      e._overrideLayer = targetLayer;
+      e._overrideColor = targetColor;
+      e._overrideAci = targetAci;
+      const b = getBaseEntityBounds(e);
+      if (b) expandB(b.minX, b.minY, b.maxX, b.maxY);
+    });
+
+    const totalCount = baseList.length + markList.length;
+    const lastClickW = state.repairSel.lastClickWorld;
+    clearRepairSelection();
+
+    // Ensure photo numbers & target layer are visible so the new photoNo always shows immediately
+    state.showPhotoNo = true;
+    const chkP = document.getElementById('chkShowPhotoNo');
+    if (chkP) chkP.checked = true;
+    state.hiddenLayers['DMG:' + targetLayer] = false;
+
+    // If only a single existing marking was selected, edit its photoNo directly
+    if (markList.length === 1 && !baseList.length) {
+      saveDocsToStorage();
+      selectMarking(markList[0].id);
+      renderMarkingsPanel();
+      renderCanvas();
+      openKeypadForMarking(markList[0].id, true);
+      showToast(`레이어(${targetLayer})·색상 변경 완료 · 사진번호를 입력하세요.`, 'success');
+      return;
+    }
+
+    // Smart anchor: if selected entity bounds are compact and on-screen, place at left-upper-mid;
+    // if it's a very long line or minX is off-screen when zoomed in, place right where the user clicked!
+    const ctn = document.getElementById('canvasContainer');
+    const cw = ctn.clientWidth || 800, ch = ctn.clientHeight || 600;
+    const fallbackW = lastClickW || screenToWorld(cw / 2, ch / 2);
+    let ax = fallbackW.x, ay = fallbackW.y;
+    if (Number.isFinite(minX) && Number.isFinite(maxX)) {
+      const candX = (minX + maxX) / 2;
+      const candY = maxY;
+      const candS = worldToScreen(candX, candY);
+      const spanPx = (maxX - minX) * state.view.scale;
+      const onScreen = candS.x >= 40 && candS.x <= cw - 40 && candS.y >= 30 && candS.y <= ch - 30;
+      if (onScreen && spanPx < cw * 0.55) {
+        ax = candX;
+        ay = candY;
+      }
+    }
+    const dmg = state.config.damages[state.activeDamageIdx] || { label: '보수' };
+    const id = 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    doc.markings.push({
+      id,
+      label: dmg.label || '보수',
+      layer: targetLayer,
+      color: targetColor,
+      aciColor: targetAci,
+      value: '',
+      photoNo: '',
+      photoOnly: true,
+      x: ax,
+      y: ay,
+      textScale: state.textScale,
+      worldTextHeight: getBaseTextHeight(doc) * state.textScale,
+      shape: null
+    });
+    saveDocsToStorage();
+    selectMarking(id);
+    renderMarkingsPanel();
+    renderCanvas();
+    openKeypadForMarking(id, true);
+    showToast(`선택한 객체 ${totalCount}개 색상·레이어(${targetLayer}) 변경 완료 · 사진번호를 입력하세요.`, 'success');
+  }
+
+  function openKeypadForMarking(id, photoOnlyFocus = false) {
     const doc = getActiveDoc();
     const m = doc && doc.markings.find(x => x.id === id);
     if (!m) return;
     const lay = state.config.layers.find(l => l.name === m.layer) || { color: '#FF0000' };
+    const mColor = m.color || lay.color || '#FF0000';
     state.keypad.markingId = id;
     state.keypad.value = m.value || '';
     state.keypad.photoNo = m.photoNo || '';
-    setKeypadActiveField('value');
+    const isPhotoMode = photoOnlyFocus || !!m.photoOnly;
+    const boxV = document.getElementById('kpBoxValue');
+    const boxP = document.getElementById('kpBoxPhoto');
+    boxV.classList.toggle('hidden', isPhotoMode);
+    boxP.classList.toggle('col-span-12', isPhotoMode);
+    boxP.classList.toggle('col-span-5', !isPhotoMode);
+    setKeypadActiveField(isPhotoMode ? 'photoNo' : 'value');
 
-    document.getElementById('kpColorDot').style.backgroundColor = lay.color;
+    document.getElementById('kpColorDot').style.backgroundColor = mColor;
     document.getElementById('kpDamageTitle').textContent = m.label;
     document.getElementById('kpLayerName').textContent = m.layer;
     document.getElementById('kpCoordText').textContent = `WCS (${m.x.toFixed(1)}, ${m.y.toFixed(1)})`;
     document.getElementById('kpPreviewLine1').textContent = m.label + ' · 크기/수치';
-    document.getElementById('kpPreviewLine1').style.color = lay.color;
+    document.getElementById('kpPreviewLine1').style.color = mColor;
     updateKeypadPreview();
     document.getElementById('keypadModal').classList.remove('hidden');
   }
@@ -2199,25 +3149,189 @@
   /* =========================================================================
    * 12. UI RENDERING (Damage Ribbon, Drawing List, Layers, Markings)
    * ========================================================================= */
+  function renderLayerSelector() {
+    const sel = document.getElementById('selActiveLayer');
+    if (!state.config.layers.some(l => l.name === state.activeLayer)) {
+      state.activeLayer = state.config.layers[0] ? state.config.layers[0].name : '2026정밀 신규';
+    }
+    sel.innerHTML = state.config.layers.map(l =>
+      `<option value="${escapeHtml(l.name)}" ${l.name === state.activeLayer ? 'selected' : ''}>${escapeHtml(l.name)}</option>`
+    ).join('');
+  }
+
+  function getEffectiveActiveColor() {
+    if (state.colorMode === 'byLayer') {
+      const lay = state.config.layers.find(l => l.name === state.activeLayer);
+      return lay ? lay.color : '#FF0000';
+    }
+    return state.activeColor;
+  }
+
+  function getEffectiveActiveAci() {
+    if (state.colorMode === 'byLayer') {
+      const lay = state.config.layers.find(l => l.name === state.activeLayer);
+      return lay ? (lay.aciColor || 1) : 1;
+    }
+    return state.activeAciColor;
+  }
+
+  function renderColorSwatches() {
+    const effColor = getEffectiveActiveColor();
+    const matched = QUICK_COLORS.find(c => c.hex.toUpperCase() === state.activeColor.toUpperCase());
+    document.getElementById('activeColorSwatch').style.backgroundColor = effColor;
+    document.getElementById('activeColorName').textContent = state.colorMode === 'byLayer'
+      ? '레이어색'
+      : (matched ? matched.name : state.activeColor.toUpperCase());
+    document.getElementById('inpCustomColor').value = state.activeColor;
+
+    const btnC = document.getElementById('btnColorModeCustom');
+    const btnL = document.getElementById('btnColorModeByLayer');
+    if (btnC && btnL) {
+      const isLayer = state.colorMode === 'byLayer';
+      btnC.className = `px-3 py-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${!isLayer ? 'bg-blue-600 text-white border-blue-400' : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'}`;
+      btnL.className = `px-3 py-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${isLayer ? 'bg-blue-600 text-white border-blue-400' : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'}`;
+    }
+
+    const box = document.getElementById('colorSwatchesContainer');
+    box.innerHTML = '';
+    QUICK_COLORS.forEach(c => {
+      const active = state.colorMode === 'custom' && state.activeColor.toUpperCase() === c.hex.toUpperCase();
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `p-2 rounded-xl border text-left flex items-center gap-2 transition-all ${active ? 'bg-blue-600/25 border-blue-400 ring-1 ring-blue-400' : 'bg-slate-950/70 border-slate-800 hover:border-slate-600'}`;
+      btn.innerHTML = `
+        <span class="w-4 h-4 rounded-full shrink-0 border border-white/40" style="background:${c.hex}"></span>
+        <div class="min-w-0 leading-tight">
+          <div class="text-[11px] font-semibold text-white truncate">${c.name}</div>
+          <div class="text-[9px] font-mono text-slate-400">ACI ${c.aci}</div>
+        </div>
+      `;
+      btn.addEventListener('click', () => {
+        state.colorMode = 'custom';
+        state.activeColor = c.hex;
+        state.activeAciColor = c.aci;
+        renderColorSwatches();
+        renderDamageButtons();
+        renderMarkingsPanel();
+        renderCanvas();
+        document.getElementById('colorPickerModal').classList.add('hidden');
+      });
+      box.appendChild(btn);
+    });
+  }
+
+  let editingBaseTextEntity = null;
+
+  function handleEditTextClick(sx, sy) {
+    const doc = getActiveDoc();
+    if (!doc) return;
+    // Check existing marking first
+    const hm = hitTestMarking(sx, sy);
+    if (hm) {
+      selectMarking(hm.id);
+      openKeypadForMarking(hm.id, false);
+      return;
+    }
+    if (!doc.parsed || !doc.parsed.entities) {
+      showToast('수정할 수 있는 기존 DXF 텍스트가 없습니다.', 'info');
+      return;
+    }
+    const picked = findTopBaseEntityAt(doc.parsed.entities, sx, sy);
+    if (!picked || picked.type !== 'TEXT') {
+      showToast('수정할 기존 도면 글씨(텍스트/숫자) 위를 클릭해 주세요.', 'info');
+      return;
+    }
+    editingBaseTextEntity = picked;
+    document.getElementById('inpEditBaseTextContent').value = picked._overrideText != null ? picked._overrideText : (picked.text || '');
+    const sel = document.getElementById('selEditBaseTextLayer');
+    const curLayer = state.activeLayer || picked._overrideLayer || '2026정밀 변경';
+    sel.innerHTML = state.config.layers.map(l => `<option value="${escapeHtml(l.name)}" ${l.name === curLayer ? 'selected' : ''}>${escapeHtml(l.name)}</option>`).join('');
+    document.getElementById('editBaseTextModal').classList.remove('hidden');
+  }
+
+  function selectDamageByIndex(idx, switchMode = true) {
+    state.activeDamageIdx = idx;
+    const dmg = state.config.damages[idx];
+    if (dmg && dmg.defaultShape) setShape(dmg.defaultShape);
+    if (switchMode) {
+      if (dmg && dmg.label === '내용수정') {
+        setMode('editText');
+        showToast('내용수정 모드: 도면 위 기존 글씨나 숫자를 클릭해 내용을 수정하세요.', 'info');
+      } else if (dmg && (dmg.label === '보수' || dmg.label === '보수완료')) {
+        setMode('repairPick');
+        showToast('보수 선택 모드: 기존 도면의 선·숫자·글씨를 클릭하거나 드래그해 색상을 바꾸고 사진번호를 입력하세요.', 'info');
+      } else if (state.mode === 'select' || state.mode === 'repairPick' || state.mode === 'editText') {
+        setMode('text');
+      }
+    }
+    renderDamageButtons();
+  }
+
   function renderDamageButtons() {
     const box = document.getElementById('damageButtonsContainer');
     box.innerHTML = '';
     if (state.activeDamageIdx >= state.config.damages.length) state.activeDamageIdx = 0;
+    const activeDmg = state.config.damages[state.activeDamageIdx] || state.config.damages[0];
+    document.getElementById('activeDamageLabel').textContent = activeDmg ? activeDmg.label : '손상 선택';
+    document.getElementById('activeDamageDot').style.backgroundColor = getEffectiveActiveColor();
 
-    state.config.damages.forEach((dmg, idx) => {
-      const lay = state.config.layers.find(l => l.name === dmg.layer) || { color: '#FF0000' };
-      const btn = document.createElement('button');
+    // Compact dropdown-only toolbar (all 38+ damages accessed cleanly from btnOpenDamagePicker)
+  }
+
+  function renderDamagePickerModal() {
+    const search = (document.getElementById('inpDamageSearch').value || '').trim().toLowerCase();
+    const cats = ['전체'];
+    state.config.damages.forEach(d => {
+      const c = d.category || '기타';
+      if (!cats.includes(c)) cats.push(c);
+    });
+    if (!cats.includes(state.damagePickerCategory)) state.damagePickerCategory = '전체';
+
+    const tabBox = document.getElementById('damageCategoryTabs');
+    tabBox.innerHTML = '';
+    cats.forEach(c => {
+      const active = c === state.damagePickerCategory;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = `px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 transition-colors ${active ? 'bg-blue-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}`;
+      b.textContent = c;
+      b.addEventListener('click', () => { state.damagePickerCategory = c; renderDamagePickerModal(); });
+      tabBox.appendChild(b);
+    });
+
+    const grid = document.getElementById('damagePickerGrid');
+    grid.innerHTML = '';
+    const filtered = state.config.damages
+      .map((d, idx) => ({ d, idx }))
+      .filter(({ d }) => {
+        const matchCat = state.damagePickerCategory === '전체' || (d.category || '기타') === state.damagePickerCategory;
+        const matchSearch = !search || d.label.toLowerCase().includes(search) || (d.category || '').toLowerCase().includes(search);
+        return matchCat && matchSearch;
+      })
+      .sort((a, b) => a.d.label.localeCompare(b.d.label, 'ko'));
+
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="col-span-full text-center py-8 text-xs text-slate-500">일치하는 손상명이 없습니다. 상단 레이어 설정에서 새 손상명을 추가할 수 있습니다.</div>';
+      return;
+    }
+
+    filtered.forEach(({ d, idx }) => {
       const active = idx === state.activeDamageIdx;
-      btn.className = `px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border ${active ? 'dmg-active text-white border-white/60' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'}`;
-      if (active) btn.style.backgroundColor = lay.color + 'dd';
-      btn.innerHTML = `<span class="w-2.5 h-2.5 rounded-full shrink-0 border border-white/40" style="background:${lay.color}"></span><span>${escapeHtml(dmg.label)}</span>`;
-      btn.addEventListener('click', () => {
-        state.activeDamageIdx = idx;
-        if (dmg.defaultShape) setShape(dmg.defaultShape);
-        if (state.mode === 'select') setMode('text');
-        renderDamageButtons();
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = `p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-1 ${active ? 'bg-blue-600/25 border-blue-400 text-white ring-1 ring-blue-400' : 'bg-slate-950/70 border-slate-800 hover:border-slate-600 text-slate-200'}`;
+      card.innerHTML = `
+        <div class="text-xs font-bold truncate">${escapeHtml(d.label)}</div>
+        <div class="text-[10px] text-slate-400 flex items-center justify-between">
+          <span>${escapeHtml(d.category || '기타')}</span>
+          <span class="text-slate-500">${shapeLabel(d.defaultShape || 'cloud')}</span>
+        </div>
+      `;
+      card.addEventListener('click', () => {
+        selectDamageByIndex(idx, true);
+        document.getElementById('damagePickerModal').classList.add('hidden');
       });
-      box.appendChild(btn);
+      grid.appendChild(card);
     });
   }
 
@@ -2288,23 +3402,33 @@
     document.getElementById('hudCount').textContent = markings.length + '건';
     document.getElementById('mobileCountBadge').textContent = markings.length;
 
-    // Summary counts by damage label
+    // Summary counts by present damage labels (keeps panel compact even with 35+ standard damage types)
     const summaryBox = document.getElementById('damageSummaryGrid');
     summaryBox.innerHTML = '';
-    state.config.damages.forEach(dmg => {
-      const lay = state.config.layers.find(l => l.name === dmg.layer) || { color: '#FF0000' };
-      const cnt = markings.filter(m => m.label === dmg.label).length;
-      const card = document.createElement('div');
-      card.className = 'px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between';
-      card.innerHTML = `
-        <span class="flex items-center gap-1.5 text-xs text-slate-300 truncate">
-          <span class="w-2 h-2 rounded-full shrink-0" style="background:${lay.color}"></span>
-          <span class="truncate">${escapeHtml(dmg.label)}</span>
-        </span>
-        <span class="text-xs font-bold text-white">${cnt}</span>
-      `;
-      summaryBox.appendChild(card);
+    const countMap = new Map();
+    markings.forEach(m => {
+      const mLay = state.config.layers.find(l => l.name === m.layer);
+      const dispCol = state.colorMode === 'byLayer' ? (mLay ? mLay.color : '#FF0000') : (m.color || (mLay ? mLay.color : '#FF0000'));
+      const cur = countMap.get(m.label) || { count: 0, color: dispCol };
+      cur.count += 1;
+      countMap.set(m.label, cur);
     });
+    if (countMap.size === 0) {
+      summaryBox.innerHTML = '<div class="col-span-2 text-center text-[11px] text-slate-500 py-1">배치된 손상 집계 없음</div>';
+    } else {
+      countMap.forEach((info, label) => {
+        const card = document.createElement('div');
+        card.className = 'px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between';
+        card.innerHTML = `
+          <span class="flex items-center gap-1.5 text-xs text-slate-300 truncate">
+            <span class="w-2 h-2 rounded-full shrink-0" style="background:${info.color}"></span>
+            <span class="truncate">${escapeHtml(label)}</span>
+          </span>
+          <span class="text-xs font-bold text-white">${info.count}</span>
+        `;
+        summaryBox.appendChild(card);
+      });
+    }
 
     // Markings list
     const listBox = document.getElementById('markingsListContainer');
@@ -2316,15 +3440,22 @@
 
     markings.slice().reverse().forEach((m, revIdx) => {
       const lay = state.config.layers.find(l => l.name === m.layer) || { color: '#FF0000' };
+      const mColor = state.colorMode === 'byLayer' ? (lay.color || '#FF0000') : (m.color || lay.color || '#FF0000');
       const isSel = m.id === state.selectedMarkingId;
       const row = document.createElement('div');
       row.className = `p-2 rounded-xl border cursor-pointer transition-colors ${isSel ? 'bg-blue-600/20 border-blue-500' : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'}`;
+      const diffHtml = m.isTextEdit
+        ? `<div class="mt-1.5 px-2 py-1 rounded-lg bg-slate-900/90 border border-slate-800 text-[11px] font-mono space-y-0.5">
+             <div class="text-slate-400 truncate"><span class="text-slate-500">기존:</span> <span class="line-through">${escapeHtml(m.oldText || '')}</span></div>
+             <div class="text-emerald-300 font-semibold truncate"><span class="text-emerald-500">변경:</span> ${escapeHtml(m.newText || '')}</div>
+           </div>`
+        : '';
       row.innerHTML = `
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-1.5 min-w-0">
-            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${lay.color}"></span>
-            <span class="text-xs font-bold text-white">${escapeHtml(m.label)}</span>
-            <span class="text-xs font-mono text-amber-300 truncate">${escapeHtml(m.value || '-')}</span>
+            <span class="w-2.5 h-2.5 rounded-full shrink-0 border border-white/30" style="background:${mColor}"></span>
+            <span class="text-xs font-bold text-white shrink-0">${escapeHtml(m.label)}</span>
+            ${!m.isTextEdit ? `<span class="text-xs font-mono text-amber-300 truncate">${escapeHtml(m.value || (m.photoOnly ? '보수' : '-'))}</span>` : ''}
             ${m.photoNo ? `<span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 shrink-0">${escapeHtml(m.photoNo)}</span>` : ''}
           </div>
           <div class="flex items-center gap-1 shrink-0">
@@ -2332,6 +3463,7 @@
             <button data-act="del" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-rose-600 text-[10px] text-slate-200">삭제</button>
           </div>
         </div>
+        ${diffHtml}
         <div class="text-[10px] text-slate-400 mt-1 flex items-center justify-between font-mono">
           <span>${escapeHtml(m.layer)}${m.shape ? ' · ' + shapeLabel(m.shape.kind) : ''}</span>
           <span>(${m.x.toFixed(0)}, ${m.y.toFixed(0)})</span>
@@ -2367,10 +3499,13 @@
     document.querySelectorAll('.mode-btn').forEach(b => {
       b.classList.toggle('tool-active', b.getAttribute('data-mode') === mode);
     });
+    if (mode !== 'repairPick') clearRepairSelection();
     const hints = {
-      select: '선택/이동 모드: 드래그로 화면 이동 · 손상 클릭으로 선택/드래그/더블클릭 편집',
-      text: '손상 배치 모드: 도면 위를 클릭/터치하면 손상명이 배치되고 키패드가 열립니다',
-      draw: '형상 그리기 모드: 마우스나 손가락으로 손상 범위를 그리면 CAD 도형으로 자동 보정됩니다'
+      select: '이동 모드: 드래그로 화면 이동 · 손상 클릭으로 선택/드래그/더블클릭 편집',
+      text: '배치 모드: 클릭으로 손상 배치 · 드래그로 도형 자동 보정 그리기',
+      draw: '그리기 모드: 마우스·손가락으로 손상 범위를 그리면 CAD 도형으로 자동 보정',
+      repairPick: '보수 선택 모드: 기존 선·글씨·도형을 여러 개 클릭/드래그로 선택한 뒤 하단 [손상입력] 버튼을 누르세요',
+      editText: '내용수정 모드: 기존 DXF 도면의 글씨나 숫자를 클릭하면 내용을 직접 수정할 수 있습니다'
     };
     document.getElementById('modeHintPill').textContent = hints[mode] || '';
     canvas.style.cursor = mode === 'select' ? 'grab' : 'crosshair';
@@ -2378,24 +3513,32 @@
 
   function setShape(shape) {
     state.activeShape = shape;
-    document.querySelectorAll('.shape-btn').forEach(b => {
-      b.classList.toggle('tool-active', b.getAttribute('data-shape') === shape);
-    });
+    const sel = document.getElementById('selActiveShape');
+    if (sel) sel.value = shape;
   }
 
   document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.getAttribute('data-mode'))));
-  document.querySelectorAll('.shape-btn').forEach(b => b.addEventListener('click', () => {
-    setShape(b.getAttribute('data-shape'));
-    setMode('draw');
-  }));
+  document.getElementById('selActiveShape').addEventListener('change', e => {
+    setShape(e.target.value);
+    if (state.mode === 'select' || state.mode === 'repairPick') setMode('draw');
+  });
 
   document.getElementById('chkAutoBeautify').addEventListener('change', e => { state.autoBeautify = e.target.checked; });
   document.getElementById('selBeautifyStrength').addEventListener('change', e => { state.beautifyStrength = e.target.value; });
   document.getElementById('chkShowBaseDrawing').addEventListener('change', e => { state.showBaseDrawing = e.target.checked; renderCanvas(); });
+  document.getElementById('chkShowPhotoNo').addEventListener('change', e => { state.showPhotoNo = e.target.checked; renderCanvas(); });
+  document.getElementById('btnOpenDamagePicker').addEventListener('click', () => {
+    document.getElementById('inpDamageSearch').value = '';
+    renderDamagePickerModal();
+    document.getElementById('damagePickerModal').classList.remove('hidden');
+  });
+  document.getElementById('btnCloseDamagePicker').addEventListener('click', () => document.getElementById('damagePickerModal').classList.add('hidden'));
+  document.getElementById('inpDamageSearch').addEventListener('input', renderDamagePickerModal);
   function formatTextScale(val) {
-    if (val < 0.1) return val.toFixed(3).replace(/0$/, '') + 'x';
-    if (val < 1) return val.toFixed(2) + 'x';
-    return val.toFixed(1) + 'x';
+    const px = val * 10;
+    if (px < 1) return px.toFixed(1) + 'px';
+    if (px < 10) return px.toFixed(1).replace(/\.0$/, '') + 'px';
+    return Math.round(px) + 'px';
   }
 
   function applyGlobalTextScale(val) {
@@ -2512,10 +3655,17 @@
     draftConfig.layers.forEach((l, idx) => {
       const row = document.createElement('div');
       row.className = 'grid grid-cols-12 gap-1.5 items-center bg-slate-950/60 p-2 rounded-lg border border-slate-800';
+      const matchedCol = QUICK_COLORS.find(c => c.hex.toUpperCase() === (l.color || '').toUpperCase() || c.aci === l.aciColor);
+      const colorOpts = QUICK_COLORS.map(c =>
+        `<option value="${c.hex}|${c.aci}" ${matchedCol && matchedCol.aci === c.aci ? 'selected' : ''}>${c.name} (ACI ${c.aci})</option>`
+      ).join('') + (!matchedCol ? `<option value="${l.color}|${l.aciColor || 1}" selected>사용자 (${l.color})</option>` : '');
+
       row.innerHTML = `
         <input type="text" value="${escapeHtml(l.name)}" data-f="name" class="col-span-4 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-white" placeholder="레이어명" />
-        <input type="color" value="${l.color}" data-f="color" class="col-span-2 h-7 w-full bg-transparent cursor-pointer rounded" />
-        <input type="number" value="${l.aciColor}" min="1" max="255" data-f="aciColor" class="col-span-2 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white" title="AutoCAD ACI 색상번호" />
+        <div class="col-span-4 flex items-center gap-1.5">
+          <span class="w-4 h-4 rounded-full shrink-0 border border-white/40" style="background:${l.color}"></span>
+          <select data-f="colorPreset" class="flex-1 min-w-0 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-xs text-white">${colorOpts}</select>
+        </div>
         <select data-f="lineType" class="col-span-3 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-xs text-white">
           <option value="CONTINUOUS" ${l.lineType === 'CONTINUOUS' ? 'selected' : ''}>CONTINUOUS</option>
           <option value="DASHED" ${l.lineType === 'DASHED' ? 'selected' : ''}>DASHED</option>
@@ -2526,8 +3676,15 @@
       row.querySelectorAll('input,select').forEach(inp => {
         inp.addEventListener('change', () => {
           const f = inp.getAttribute('data-f');
-          draftConfig.layers[idx][f] = f === 'aciColor' ? parseInt(inp.value, 10) || 1 : inp.value;
-          if (f === 'name') renderSettingsVisualEditor();
+          if (f === 'colorPreset') {
+            const [hex, aciStr] = inp.value.split('|');
+            draftConfig.layers[idx].color = hex;
+            draftConfig.layers[idx].aciColor = parseInt(aciStr, 10) || 1;
+            renderSettingsVisualEditor();
+          } else {
+            draftConfig.layers[idx][f] = inp.value;
+            if (f === 'name') renderSettingsVisualEditor();
+          }
         });
       });
       row.querySelector('[data-del-l]').addEventListener('click', () => {
@@ -2597,6 +3754,8 @@
       }
       state.config = JSON.parse(JSON.stringify(draftConfig));
       saveConfig();
+      renderLayerSelector();
+      renderColorSwatches();
       renderDamageButtons();
       renderLayerToggles();
       renderMarkingsPanel();
@@ -2648,6 +3807,142 @@
     state.lightBg = !state.lightBg;
     renderCanvas();
   });
+  document.getElementById('selActiveLayer').addEventListener('change', e => {
+    state.activeLayer = e.target.value;
+    renderColorSwatches();
+    renderDamageButtons();
+    showToast(`작업 레이어: ${state.activeLayer}`, 'info');
+  });
+
+  document.getElementById('btnColorModeCustom').addEventListener('click', () => {
+    state.colorMode = 'custom';
+    renderColorSwatches();
+    renderDamageButtons();
+    renderMarkingsPanel();
+    renderCanvas();
+    showToast('지정색 모드: 선택한 색상으로 표기됩니다.', 'info');
+  });
+
+  document.getElementById('btnColorModeByLayer').addEventListener('click', () => {
+    state.colorMode = 'byLayer';
+    renderColorSwatches();
+    renderDamageButtons();
+    renderMarkingsPanel();
+    renderCanvas();
+    document.getElementById('colorPickerModal').classList.add('hidden');
+    showToast('레이어색(ByLayer) 모드: 각 레이어에 지정된 색상으로 통일 표시됩니다.', 'info');
+  });
+
+  document.getElementById('btnOpenColorPicker').addEventListener('click', () => {
+    renderColorSwatches();
+    document.getElementById('colorPickerModal').classList.remove('hidden');
+  });
+  document.getElementById('btnCloseColorPicker').addEventListener('click', () => {
+    document.getElementById('colorPickerModal').classList.add('hidden');
+  });
+  document.getElementById('inpCustomColor').addEventListener('input', e => {
+    state.activeColor = e.target.value;
+    state.activeAciColor = hexToNearestAci(e.target.value);
+    renderColorSwatches();
+    renderDamageButtons();
+  });
+  document.getElementById('btnApplyCustomColor').addEventListener('click', () => {
+    state.colorMode = 'custom';
+    const val = document.getElementById('inpCustomColor').value;
+    state.activeColor = val;
+    state.activeAciColor = hexToNearestAci(val);
+    renderColorSwatches();
+    renderDamageButtons();
+    renderMarkingsPanel();
+    renderCanvas();
+    document.getElementById('colorPickerModal').classList.add('hidden');
+  });
+
+  document.getElementById('selSelectedLayer').addEventListener('change', e => {
+    const doc = getActiveDoc();
+    const m = doc && doc.markings.find(x => x.id === state.selectedMarkingId);
+    if (!m) return;
+    pushUndo();
+    m.layer = e.target.value;
+    saveDocsToStorage();
+    renderMarkingsPanel();
+    renderCanvas();
+  });
+
+  document.getElementById('inpSelectedColor').addEventListener('input', e => {
+    const doc = getActiveDoc();
+    const m = doc && doc.markings.find(x => x.id === state.selectedMarkingId);
+    if (!m) return;
+    m.color = e.target.value;
+    m.aciColor = hexToNearestAci(e.target.value);
+    saveDocsToStorage();
+    renderMarkingsPanel();
+    renderCanvas();
+  });
+
+  document.getElementById('btnApplyRepairSelection').addEventListener('click', applyRepairSelection);
+  document.getElementById('btnClearRepairSelection').addEventListener('click', clearRepairSelection);
+
+  document.getElementById('btnCloseEditBaseText').addEventListener('click', () => {
+    editingBaseTextEntity = null;
+    document.getElementById('editBaseTextModal').classList.add('hidden');
+  });
+  document.getElementById('btnCancelEditBaseText').addEventListener('click', () => {
+    editingBaseTextEntity = null;
+    document.getElementById('editBaseTextModal').classList.add('hidden');
+  });
+  document.getElementById('btnSaveEditBaseText').addEventListener('click', () => {
+    const doc = getActiveDoc();
+    if (!doc || !editingBaseTextEntity) return;
+    const origText = editingBaseTextEntity._overrideText != null ? editingBaseTextEntity._overrideText : (editingBaseTextEntity.text || '');
+    const newText = document.getElementById('inpEditBaseTextContent').value;
+    const newLayer = document.getElementById('selEditBaseTextLayer').value || state.activeLayer;
+    pushUndo();
+    const editLayDef = state.config.layers.find(l => l.name === newLayer);
+    const effEditColor = state.colorMode === 'byLayer' ? (editLayDef ? editLayDef.color : getEffectiveActiveColor()) : getEffectiveActiveColor();
+    const effEditAci = state.colorMode === 'byLayer' ? (editLayDef ? (editLayDef.aciColor || 1) : getEffectiveActiveAci()) : getEffectiveActiveAci();
+    editingBaseTextEntity._overrideText = newText;
+    editingBaseTextEntity._overrideLayer = newLayer;
+    editingBaseTextEntity._overrideColor = effEditColor;
+    editingBaseTextEntity._overrideAci = effEditAci;
+
+    state.showPhotoNo = true;
+    const chkP = document.getElementById('chkShowPhotoNo');
+    if (chkP) chkP.checked = true;
+    state.hiddenLayers['DMG:' + newLayer] = false;
+
+    const b = getBaseEntityBounds(editingBaseTextEntity);
+    const ax = b ? ((b.minX + b.maxX) / 2) : editingBaseTextEntity.x;
+    const ay = b ? b.maxY : (editingBaseTextEntity.y + (editingBaseTextEntity.height || 100));
+    const id = 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    doc.markings.push({
+      id,
+      label: '내용수정',
+      layer: newLayer,
+      color: effEditColor,
+      aciColor: effEditAci,
+      value: `${origText} → ${newText}`,
+      oldText: origText,
+      newText: newText,
+      isTextEdit: true,
+      photoNo: '',
+      photoOnly: true,
+      x: ax,
+      y: ay,
+      textScale: state.textScale,
+      worldTextHeight: getBaseTextHeight(doc) * state.textScale,
+      shape: null
+    });
+    editingBaseTextEntity = null;
+    document.getElementById('editBaseTextModal').classList.add('hidden');
+    saveDocsToStorage();
+    selectMarking(id);
+    renderMarkingsPanel();
+    renderCanvas();
+    openKeypadForMarking(id, true);
+    showToast('내용수정 적용 완료 · 사진번호를 키패드로 입력하세요. (없으면 바로 완료)', 'success');
+  });
+
   document.getElementById('btnEditSelected').addEventListener('click', () => {
     if (state.selectedMarkingId) openKeypadForMarking(state.selectedMarkingId);
   });
@@ -2664,6 +3959,56 @@
     renderMarkingsPanel();
     renderCanvas();
     showToast('현재 도면의 손상 마킹을 모두 삭제했습니다.', 'info');
+  });
+
+  document.getElementById('btnQuickSave').addEventListener('click', () => {
+    saveConfig();
+    saveDocsToStorage(true);
+  });
+
+  document.getElementById('btnExportBackup').addEventListener('click', () => {
+    const doc = getActiveDoc();
+    if (!doc) return;
+    const payload = {
+      app: 'BridgeCAD Mark',
+      version: 1,
+      savedAt: new Date().toISOString(),
+      docName: doc.name,
+      docType: doc.type,
+      markings: doc.markings || [],
+      entityOverrides: extractEntityOverrides(doc),
+      config: state.config
+    };
+    const baseName = doc.name.replace(/\.(dxf|pdf)$/i, '');
+    downloadTextFile(JSON.stringify(payload, null, 2), `${baseName}_작업백업.json`, 'application/json');
+    showToast('작업 백업 파일(.json)이 저장되었습니다.', 'success');
+  });
+
+  document.getElementById('backupFileInput').addEventListener('change', async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try {
+      const data = JSON.parse(await f.text());
+      const doc = getActiveDoc();
+      if (!doc) return;
+      pushUndo();
+      if (Array.isArray(data.markings)) doc.markings = data.markings;
+      if (Array.isArray(data.entityOverrides)) applyEntityOverrides(doc, data.entityOverrides);
+      if (data.config && Array.isArray(data.config.layers) && Array.isArray(data.config.damages)) {
+        state.config = data.config;
+        saveConfig();
+        renderLayerSelector();
+        renderLayerToggles();
+        renderDamageButtons();
+      }
+      saveDocsToStorage();
+      renderMarkingsPanel();
+      renderCanvas();
+      showToast(`작업 백업 복원 완료 (마킹 ${doc.markings.length}건)`, 'success');
+    } catch (err) {
+      showToast('백업 파일 복원 오류: ' + (err.message || '올바른 JSON 백업 파일이 아닙니다.'), 'error');
+    }
+    e.target.value = '';
   });
 
   document.getElementById('btnExportDxf').addEventListener('click', () => {
@@ -2713,7 +4058,12 @@
 
   // Keyboard Shortcuts
   window.addEventListener('keydown', e => {
+    const tag = e.target && e.target.tagName ? e.target.tagName.toUpperCase() : '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
     if (!document.getElementById('settingsModal').classList.contains('hidden')) return;
+    if (!document.getElementById('editBaseTextModal').classList.contains('hidden')) return;
+    if (!document.getElementById('damagePickerModal').classList.contains('hidden')) return;
+    if (!document.getElementById('colorPickerModal').classList.contains('hidden')) return;
     if (!document.getElementById('keypadModal').classList.contains('hidden')) {
       if (e.key === 'Enter') closeKeypad(true);
       else if (e.key === 'Escape') closeKeypad(false);
@@ -2758,22 +4108,27 @@
   /* =========================================================================
    * 16. INITIALIZATION
    * ========================================================================= */
-  function initApp() {
+  async function initApp() {
     if (window.lucide) window.lucide.createIcons();
     loadSavedConfig();
 
-    // Load saved DXF docs or seed 2 realistic bridge drawings with initial sample markings
-    const savedRaw = safeStorageGet(STORAGE_KEY_DOCS);
-    if (savedRaw) {
-      try {
-        const arr = JSON.parse(savedRaw);
-        arr.forEach(item => {
-          if (item.type === 'dxf' && item.rawDxfText) {
-            const parsed = parseDxf(item.rawDxfText);
-            state.docs.push({ ...item, parsed, bounds: parsed.bounds });
-          }
-        });
-      } catch (_) {}
+    // Load saved DXF docs from IndexedDB first (supports large DXF files), fallback to localStorage
+    let savedArr = await idbGet('docs');
+    if (!Array.isArray(savedArr) || !savedArr.length) {
+      const savedRaw = safeStorageGet(STORAGE_KEY_DOCS);
+      if (savedRaw) {
+        try { savedArr = JSON.parse(savedRaw); } catch (_) { savedArr = null; }
+      }
+    }
+    if (Array.isArray(savedArr)) {
+      savedArr.forEach(item => {
+        if (item.type === 'dxf' && item.rawDxfText) {
+          const parsed = parseDxf(item.rawDxfText);
+          const docObj = { ...item, parsed, bounds: parsed.bounds };
+          if (item.entityOverrides) applyEntityOverrides(docObj, item.entityOverrides);
+          state.docs.push(docObj);
+        }
+      });
     }
 
     if (!state.docs.length) {
@@ -2802,8 +4157,8 @@
           parsed: pierParsed,
           bounds: pierParsed.bounds,
           markings: [
-            { id: 'seed_1', label: '균열', layer: 'DMG_CRACK', value: '0.2mm L=2.8m', photoNo: 'P-01', x: seedCrack.anchor.x, y: seedCrack.anchor.y, textScale: 1.0, shape: seedCrack },
-            { id: 'seed_2', label: '박리', layer: 'DMG_SPALLING', value: '0.3x0.2m', photoNo: 'P-02', x: seedCloud.anchor.x, y: seedCloud.anchor.y, textScale: 1.0, shape: seedCloud }
+            { id: 'seed_1', label: '균열', layer: '2026정밀 신규', color: '#FF0000', aciColor: 1, value: '0.2mm L=2.8m', photoNo: 'P-01', x: seedCrack.anchor.x, y: seedCrack.anchor.y, textScale: 1.0, shape: seedCrack },
+            { id: 'seed_2', label: '박리', layer: '2026정밀 보수', color: '#2563EB', aciColor: 5, value: '0.3x0.2m', photoNo: 'P-02', x: seedCloud.anchor.x, y: seedCloud.anchor.y, textScale: 1.0, shape: seedCloud }
           ]
         },
         {
@@ -2819,6 +4174,8 @@
       );
     }
 
+    renderLayerSelector();
+    renderColorSwatches();
     renderDamageButtons();
     setMode('select');
     setShape('crack');
@@ -2827,6 +4184,10 @@
     window.addEventListener('resize', resizeCanvas);
   }
 
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') saveDocsToStorage(false);
+  });
+  window.addEventListener('beforeunload', () => saveDocsToStorage(false));
   window.addEventListener('load', initApp);
 })();
 </script>
